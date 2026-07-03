@@ -148,12 +148,11 @@
                             </div>
                         </div>
                         
-                        <!-- Toggle Medicação -->
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-slate-700">Medicação Administrada?</span>
-                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" id="toggle-meds" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/>
-                                <label for="toggle-meds" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                        <!-- Lista de Medicações -->
+                        <div class="pt-3 border-t border-slate-100">
+                            <span class="text-sm font-medium text-slate-700 block mb-3"><i class="fa-solid fa-pills text-blue-500 mr-1"></i> Medicações do Turno</span>
+                            <div id="meds-container" class="flex flex-col gap-2">
+                                <!-- Renderizado via JS -->
                             </div>
                         </div>
 
@@ -314,7 +313,26 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('current-user-display').textContent = currentUser;
+            renderCaregiverMeds();
             switchTab('prontuario');
+        }
+
+        function renderCaregiverMeds() {
+            const container = document.getElementById('meds-container');
+            const meds = JSON.parse(localStorage.getItem('cerraCare_medsList')) || [];
+            if(meds.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-100">Nenhum remédio cadastrado no Admin.</p>';
+                return;
+            }
+            container.innerHTML = '';
+            meds.forEach(med => {
+                container.innerHTML += `
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:border-primary transition shadow-sm">
+                        <input type="checkbox" value="${med}" class="caregiver-med-cb w-5 h-5 text-primary rounded border-slate-300 focus:ring-primary">
+                        <span class="text-sm text-slate-700 font-medium">${med}</span>
+                    </label>
+                `;
+            });
         }
 
         // --- NAVEGAÇÃO ---
@@ -345,7 +363,7 @@
             const sat = document.getElementById('vital-sat').value;
             
             const food = document.getElementById('toggle-food').checked;
-            const meds = document.getElementById('toggle-meds').checked;
+            const meds = Array.from(document.querySelectorAll('.caregiver-med-cb:checked')).map(cb => cb.value);
             const wc = document.getElementById('toggle-wc').checked;
             
             const notes = document.getElementById('notes').value;
@@ -388,7 +406,7 @@
             document.getElementById('vital-temp').value = '';
             document.getElementById('vital-sat').value = '';
             document.getElementById('toggle-food').checked = false;
-            document.getElementById('toggle-meds').checked = false;
+            document.querySelectorAll('.caregiver-med-cb').forEach(cb => cb.checked = false);
             document.getElementById('toggle-wc').checked = false;
             document.getElementById('notes').value = '';
         }
@@ -413,7 +431,13 @@
                 // Render badges de rotina
                 let badges = '';
                 if(record.routine.food) badges += `<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">Comeu</span> `;
-                if(record.routine.meds) badges += `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">Medicação</span> `;
+                
+                if(Array.isArray(record.routine.meds) && record.routine.meds.length > 0) {
+                    badges += `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold" title="${record.routine.meds.join(', ')}">Remédios (${record.routine.meds.length})</span> `;
+                } else if(record.routine.meds === true) {
+                    badges += `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">Medicação</span> `;
+                }
+
                 if(record.routine.wc) badges += `<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">Diurese/Evac.</span> `;
 
                 // Montar vitais resumidos
@@ -423,6 +447,14 @@
                 if(record.vitals.temp) vitalsText.push(`T: ${record.vitals.temp}°C`);
                 if(record.vitals.sat) vitalsText.push(`O2: ${record.vitals.sat}%`);
                 const vitalsSummary = vitalsText.length > 0 ? `<div class="mt-2 text-xs font-mono text-slate-500 bg-slate-50 p-2 rounded">${vitalsText.join(' | ')}</div>` : '';
+
+                // Montar lista de remédios
+                let medsListHtml = '';
+                if(Array.isArray(record.routine.meds) && record.routine.meds.length > 0) {
+                    medsListHtml = `<div class="mt-2 text-xs text-slate-600 bg-blue-50/50 p-2 rounded border border-blue-100">
+                        <span class="font-bold text-blue-800"><i class="fa-solid fa-pills"></i> Dados:</span> ${record.routine.meds.join(', ')}
+                    </div>`;
+                }
 
                 const cardHtml = `
                     <div class="relative pl-6 mb-6 last:mb-0">
@@ -439,6 +471,7 @@
                             </div>
                             
                             ${vitalsSummary}
+                            ${medsListHtml}
                             
                             ${record.notes ? `<p class="text-sm text-slate-600 mt-3 italic border-l-2 border-slate-200 pl-2">"${record.notes}"</p>` : ''}
                         </div>

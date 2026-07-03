@@ -100,6 +100,20 @@
                 </div>
             </div>
 
+            <!-- Gerenciador de Remédios -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-pills text-primary"></i> Gerenciar Medicações (Checklist)
+                </h3>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-med" placeholder="Nome do remédio (Ex: Losartana 50mg)" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                    <button onclick="addMed()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-600 transition">Adicionar</button>
+                </div>
+                <div id="meds-list" class="flex flex-wrap gap-2">
+                    <!-- Remédios renderizados aqui -->
+                </div>
+            </div>
+
             <!-- Tabela de Registros -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-6 border-b border-slate-200 flex justify-between items-center">
@@ -182,11 +196,15 @@
                         <input type="checkbox" id="form-food" class="w-4 h-4 text-primary rounded"> Comeu
                     </label>
                     <label class="flex items-center gap-2 text-sm text-slate-700">
-                        <input type="checkbox" id="form-meds" class="w-4 h-4 text-primary rounded"> Medicação
-                    </label>
-                    <label class="flex items-center gap-2 text-sm text-slate-700">
                         <input type="checkbox" id="form-wc" class="w-4 h-4 text-primary rounded"> WC
                     </label>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-xs font-medium text-slate-500 mb-2">Medicações Administradas</label>
+                    <div id="form-meds-container" class="flex flex-wrap gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl min-h-[48px]">
+                        <!-- Checkboxes dinâmicos -->
+                    </div>
                 </div>
 
                 <div>
@@ -233,10 +251,54 @@
                 document.getElementById('login-admin').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
                 renderAdmin();
+                renderMeds();
             }
         });
 
-        // --- DADOS ---
+        // --- DADOS E REMÉDIOS ---
+        function getMeds() {
+            return JSON.parse(localStorage.getItem('cerraCare_medsList')) || [];
+        }
+
+        function saveMeds(meds) {
+            localStorage.setItem('cerraCare_medsList', JSON.stringify(meds));
+            renderMeds();
+        }
+
+        function renderMeds() {
+            const meds = getMeds();
+            const container = document.getElementById('meds-list');
+            if(!container) return;
+            container.innerHTML = '';
+            meds.forEach((med, index) => {
+                container.innerHTML += `
+                    <div class="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-sm">
+                        ${med}
+                        <button onclick="removeMed(${index})" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function addMed() {
+            const input = document.getElementById('new-med');
+            const val = input.value.trim();
+            if(val) {
+                const meds = getMeds();
+                if(!meds.includes(val)) {
+                    meds.push(val);
+                    saveMeds(meds);
+                }
+                input.value = '';
+            }
+        }
+
+        function removeMed(index) {
+            const meds = getMeds();
+            meds.splice(index, 1);
+            saveMeds(meds);
+        }
+
         function getRecords() {
             return JSON.parse(localStorage.getItem('cerraCare_records')) || [];
         }
@@ -288,7 +350,13 @@
 
                     let badges = '';
                     if(r.routine.food) badges += `<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold mr-1">C</span>`;
-                    if(r.routine.meds) badges += `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold mr-1">M</span>`;
+                    
+                    if(Array.isArray(r.routine.meds) && r.routine.meds.length > 0) {
+                        badges += `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold mr-1" title="${r.routine.meds.join(', ')}">M(${r.routine.meds.length})</span>`;
+                    } else if(r.routine.meds === true) {
+                        badges += `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold mr-1">M</span>`;
+                    }
+
                     if(r.routine.wc) badges += `<span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-bold mr-1">W</span>`;
 
                     const tr = document.createElement('tr');
@@ -328,6 +396,31 @@
         const modal = document.getElementById('crud-modal');
         let currentAction = 'add'; // 'add' ou 'edit'
 
+        function renderMedsCheckboxes(checkedMeds = []) {
+            const meds = getMeds();
+            const container = document.getElementById('form-meds-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            // Se houver remédios antigos que não estão na lista atual, adicioná-los visualmente para não perder dado
+            checkedMeds.forEach(cMed => {
+                if(!meds.includes(cMed)) meds.push(cMed);
+            });
+
+            if(meds.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 w-full py-1">Nenhum remédio cadastrado no gerenciador.</p>';
+                return;
+            }
+            meds.forEach(med => {
+                const isChecked = checkedMeds.includes(med) ? 'checked' : '';
+                container.innerHTML += `
+                    <label class="flex items-center gap-2 text-sm text-slate-700 bg-white px-2 py-1.5 rounded border border-slate-200 shadow-sm cursor-pointer hover:border-primary transition">
+                        <input type="checkbox" value="${med}" class="med-checkbox w-4 h-4 text-primary rounded" ${isChecked}> ${med}
+                    </label>
+                `;
+            });
+        }
+
         function openModal(action, id = null) {
             currentAction = action;
             document.getElementById('modal-title').textContent = action === 'add' ? 'Adicionar Registro' : 'Editar Registro';
@@ -344,9 +437,13 @@
                     document.getElementById('form-temp').value = r.vitals.temp || '';
                     document.getElementById('form-sat').value = r.vitals.sat || '';
                     document.getElementById('form-food').checked = r.routine.food || false;
-                    document.getElementById('form-meds').checked = r.routine.meds || false;
                     document.getElementById('form-wc').checked = r.routine.wc || false;
                     document.getElementById('form-notes').value = r.notes || '';
+                    
+                    let currentMeds = [];
+                    if(Array.isArray(r.routine.meds)) currentMeds = r.routine.meds;
+                    else if(r.routine.meds === true) currentMeds = ['Medicação (Registro Antigo)'];
+                    renderMedsCheckboxes(currentMeds);
                 }
             } else {
                 // Add mode clear
@@ -358,9 +455,9 @@
                 document.getElementById('form-temp').value = '';
                 document.getElementById('form-sat').value = '';
                 document.getElementById('form-food').checked = false;
-                document.getElementById('form-meds').checked = false;
                 document.getElementById('form-wc').checked = false;
                 document.getElementById('form-notes').value = '';
+                renderMedsCheckboxes([]);
             }
 
             modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -388,7 +485,7 @@
                 },
                 routine: {
                     food: document.getElementById('form-food').checked,
-                    meds: document.getElementById('form-meds').checked,
+                    meds: Array.from(document.querySelectorAll('.med-checkbox:checked')).map(cb => cb.value),
                     wc: document.getElementById('form-wc').checked
                 },
                 notes: document.getElementById('form-notes').value
