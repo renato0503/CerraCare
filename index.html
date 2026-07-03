@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CerraCare - Prontuário</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome para Ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Configuração do Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0ea5e9', // Sky blue
+                        secondary: '#10b981', // Emerald green
+                        dark: '#0f172a',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Ocultar scrollbar mas manter funcionalidade */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toggle Button Custom Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="flex-1 flex flex-col justify-center items-center p-6 bg-gradient-to-br from-primary to-blue-700 text-white z-50 absolute inset-0">
+        <div class="w-full max-w-sm bg-white/10 p-8 rounded-3xl shadow-2xl backdrop-blur-md border border-white/20">
+            <div class="text-center mb-8">
+                <i class="fa-solid fa-heart-pulse text-5xl mb-4 text-white"></i>
+                <h1 class="text-3xl font-bold tracking-tight">CerraCare</h1>
+                <p class="text-blue-100 mt-2 text-sm">Gestão de Cuidados</p>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-blue-50 mb-2">Nome da Cuidadora</label>
+                    <input type="text" id="caregiver-name" placeholder="Ex: Maria Silva" 
+                        class="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/30 transition">
+                </div>
+                
+                <button onclick="login()" class="w-full bg-white text-primary font-bold py-3 px-4 rounded-xl shadow-lg hover:bg-blue-50 active:scale-95 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Turno
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICATIVO PRINCIPAL -->
+    <div id="app-screen" class="hidden flex-1 flex flex-col h-full relative">
+        
+        <!-- Header -->
+        <header class="bg-white px-6 py-4 shadow-sm z-10 flex justify-between items-center sticky top-0">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">CerraCare</h2>
+                <p class="text-xs text-slate-500">Plantão: <span id="current-user-display" class="font-semibold text-primary"></span></p>
+            </div>
+            <button onclick="logout()" class="text-slate-400 hover:text-red-500 transition">
+                <i class="fa-solid fa-power-off text-lg"></i>
+            </button>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto no-scrollbar pb-24 bg-slate-50 relative">
+            
+            <!-- MÓDULO 1: PRONTUÁRIO -->
+            <section id="tab-prontuario" class="tab-content active p-4 space-y-6">
+                
+                <!-- Sinais Vitais -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-stethoscope text-primary"></i> Sinais Vitais
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">P.A. (mmHg)</label>
+                            <input type="text" id="vital-pa" placeholder="120x80" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">FC (bpm)</label>
+                            <input type="number" id="vital-fc" placeholder="75" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Temp. (°C)</label>
+                            <input type="number" step="0.1" id="vital-temp" placeholder="36.5" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Sat. O2 (%)</label>
+                            <input type="number" id="vital-sat" placeholder="98" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary outline-none transition">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rotina e Cuidados -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-secondary"></i> Rotina
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Toggle Alimentação -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-slate-700">Comeu bem?</span>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" id="toggle-food" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10"/>
+                                <label for="toggle-food" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                        
+                        <!-- Toggle Medicação -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-slate-700">Medicação Administrada?</span>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" id="toggle-meds" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/>
+                                <label for="toggle-meds" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Diurese/Evacuação -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-slate-700">Diurese/Evacuação normal?</span>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" id="toggle-wc" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/>
+                                <label for="toggle-wc" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ocorrências / Relatório -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-pen text-amber-500"></i> Relatório / Sono
+                    </h3>
+                    <textarea id="notes" rows="4" placeholder="Descreva as ocorrências do turno, como o paciente dormiu, etc..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition resize-none"></textarea>
+                </div>
+
+                <!-- Salvar -->
+                <button onclick="saveProntuario()" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/30 hover:bg-blue-600 active:scale-95 transition flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Registro
+                </button>
+                
+            </section>
+
+            <!-- MÓDULO 2: HISTÓRICO (Timeline) -->
+            <section id="tab-historico" class="tab-content p-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-800">Passagem de Plantão</h2>
+                    <button onclick="loadTimeline()" class="text-primary p-2 bg-blue-50 rounded-lg"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+                
+                <div id="timeline-container" class="relative border-l-2 border-slate-200 ml-3 space-y-8 pb-8">
+                    <!-- Timeline items will be injected here -->
+                </div>
+            </section>
+
+            <!-- MÓDULO 3: CHECK-IN / GEOLOCALIZAÇÃO -->
+            <section id="tab-checkin" class="tab-content p-4">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 text-center space-y-6 mt-4">
+                    <div class="w-20 h-20 bg-emerald-50 text-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-location-dot text-4xl"></i>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold text-slate-800">Registro de Presença</h2>
+                    <p class="text-slate-500 text-sm">Registre sua chegada à residência. Sua localização será capturada para controle da gestão.</p>
+                    
+                    <button id="btn-checkin" onclick="performCheckin()" class="w-full bg-secondary text-white font-bold py-4 rounded-xl shadow-lg shadow-secondary/30 hover:bg-emerald-600 active:scale-95 transition flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-map-pin"></i> Fazer Check-in Agora
+                    </button>
+                    
+                    <div id="location-result" class="hidden mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 text-left">
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Dados Capturados</p>
+                        <div class="flex items-center gap-3 text-sm text-slate-700 mb-2">
+                            <i class="fa-solid fa-clock text-slate-400"></i>
+                            <span id="loc-time"></span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-700 mb-2">
+                            <i class="fa-solid fa-location-crosshairs text-slate-400"></i>
+                            <span id="loc-coords" class="font-mono text-xs"></span>
+                        </div>
+                        <!-- Mini mapa estático simulado -->
+                        <div class="w-full h-32 bg-slate-200 rounded-lg mt-3 overflow-hidden relative">
+                            <img id="static-map" src="" alt="Mapa" class="w-full h-full object-cover opacity-80" onerror="this.style.display='none'">
+                            <div class="absolute inset-0 flex justify-center items-center text-slate-500 text-xs text-center p-2">
+                                Mapa Estático (Requer API Key)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bg-white border-t border-slate-200 px-6 py-3 flex justify-between items-center fixed bottom-0 w-full z-20 pb-safe">
+            <button onclick="switchTab('prontuario')" id="nav-prontuario" class="nav-btn flex flex-col items-center gap-1 text-primary transition">
+                <i class="fa-solid fa-clipboard-user text-xl"></i>
+                <span class="text-[10px] font-medium">Prontuário</span>
+            </button>
+            
+            <button onclick="switchTab('historico')" id="nav-historico" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition">
+                <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                <span class="text-[10px] font-medium">Histórico</span>
+            </button>
+            
+            <button onclick="switchTab('checkin')" id="nav-checkin" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition">
+                <i class="fa-solid fa-map-location-dot text-xl"></i>
+                <span class="text-[10px] font-medium">Check-in</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Toast Notification (Simples) -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl transition-all duration-300 transform -translate-y-24 opacity-0 z-50 flex items-center gap-3 text-sm font-medium">
+        <i id="toast-icon" class="fa-solid fa-check text-secondary"></i>
+        <span id="toast-msg">Mensagem</span>
+    </div>
+
+    <script>
+        // --- ESTADO DA APLICAÇÃO ---
+        let currentUser = localStorage.getItem('cerraCare_user') || null;
+        
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (currentUser) {
+                showApp();
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        });
+
+        // --- MÓDULO: AUTENTICAÇÃO ---
+        function login() {
+            const nameInput = document.getElementById('caregiver-name').value.trim();
+            if (!nameInput) {
+                showToast('Por favor, informe seu nome.', 'error');
+                return;
+            }
+            currentUser = nameInput;
+            localStorage.setItem('cerraCare_user', currentUser);
+            showApp();
+            showToast(`Bem-vinda(o), ${currentUser}!`);
+        }
+
+        function logout() {
+            localStorage.removeItem('cerraCare_user');
+            currentUser = null;
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('caregiver-name').value = '';
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('current-user-display').textContent = currentUser;
+            switchTab('prontuario');
+        }
+
+        // --- NAVEGAÇÃO ---
+        function switchTab(tabId) {
+            // Ocultar todos os conteudos
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Resetar cores dos botões
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-primary');
+                el.classList.add('text-slate-400');
+            });
+            
+            // Ativar selecionado
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('text-primary');
+
+            // Ações específicas por aba
+            if(tabId === 'historico') loadTimeline();
+        }
+
+        // --- MÓDULO: PRONTUÁRIO (CRUD LOCALSTORAGE) ---
+        function saveProntuario() {
+            const pa = document.getElementById('vital-pa').value;
+            const fc = document.getElementById('vital-fc').value;
+            const temp = document.getElementById('vital-temp').value;
+            const sat = document.getElementById('vital-sat').value;
+            
+            const food = document.getElementById('toggle-food').checked;
+            const meds = document.getElementById('toggle-meds').checked;
+            const wc = document.getElementById('toggle-wc').checked;
+            
+            const notes = document.getElementById('notes').value;
+
+            // Validação básica
+            if(!pa && !fc && !temp && !sat && !notes) {
+                showToast('Preencha ao menos um campo para salvar.', 'error');
+                return;
+            }
+
+            const record = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                caregiver: currentUser,
+                vitals: { pa, fc, temp, sat },
+                routine: { food, meds, wc },
+                notes: notes
+            };
+
+            // Recuperar registros existentes
+            let records = JSON.parse(localStorage.getItem('cerraCare_records')) || [];
+            // Adicionar novo (no inicio)
+            records.unshift(record);
+            // Salvar no LocalStorage
+            localStorage.setItem('cerraCare_records', JSON.stringify(records));
+
+            showToast('Prontuário salvo com sucesso!');
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('vital-pa').value = '';
+            document.getElementById('vital-fc').value = '';
+            document.getElementById('vital-temp').value = '';
+            document.getElementById('vital-sat').value = '';
+            document.getElementById('toggle-food').checked = false;
+            document.getElementById('toggle-meds').checked = false;
+            document.getElementById('toggle-wc').checked = false;
+            document.getElementById('notes').value = '';
+        }
+
+        // --- MÓDULO: HISTÓRICO ---
+        function loadTimeline() {
+            const container = document.getElementById('timeline-container');
+            const records = JSON.parse(localStorage.getItem('cerraCare_records')) || [];
+            
+            container.innerHTML = ''; // Limpar container
+
+            if (records.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-10">Nenhum registro encontrado no histórico.</p>`;
+                return;
+            }
+
+            records.forEach(record => {
+                const dateObj = new Date(record.date);
+                const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+                // Render badges de rotina
+                let badges = '';
+                if(record.routine.food) badges += `<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">Comeu</span> `;
+                if(record.routine.meds) badges += `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">Medicação</span> `;
+                if(record.routine.wc) badges += `<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">Diurese/Evac.</span> `;
+
+                // Montar vitais resumidos
+                let vitalsText = [];
+                if(record.vitals.pa) vitalsText.push(`PA: ${record.vitals.pa}`);
+                if(record.vitals.fc) vitalsText.push(`FC: ${record.vitals.fc}`);
+                if(record.vitals.temp) vitalsText.push(`T: ${record.vitals.temp}°C`);
+                if(record.vitals.sat) vitalsText.push(`O2: ${record.vitals.sat}%`);
+                const vitalsSummary = vitalsText.length > 0 ? `<div class="mt-2 text-xs font-mono text-slate-500 bg-slate-50 p-2 rounded">${vitalsText.join(' | ')}</div>` : '';
+
+                const cardHtml = `
+                    <div class="relative pl-6 mb-6 last:mb-0">
+                        <!-- Ponto na timeline -->
+                        <div class="absolute w-4 h-4 bg-primary rounded-full -left-[9px] top-1 border-4 border-slate-50"></div>
+                        
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">${record.caregiver}</h4>
+                                    <p class="text-xs text-slate-400">${dateStr} às ${timeStr}</p>
+                                </div>
+                                <div class="flex gap-1">${badges}</div>
+                            </div>
+                            
+                            ${vitalsSummary}
+                            
+                            ${record.notes ? `<p class="text-sm text-slate-600 mt-3 italic border-l-2 border-slate-200 pl-2">"${record.notes}"</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // --- MÓDULO: GEOLOCALIZAÇÃO ---
+        function performCheckin() {
+            const btn = document.getElementById('btn-checkin');
+            const resultDiv = document.getElementById('location-result');
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Obtendo localização...';
+            btn.disabled = true;
+
+            if (!navigator.geolocation) {
+                showToast('Geolocalização não suportada no seu navegador.', 'error');
+                resetCheckinBtn();
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                // Sucesso
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const timestamp = new Date(position.timestamp).toLocaleString('pt-BR');
+
+                    document.getElementById('loc-time').textContent = timestamp;
+                    document.getElementById('loc-coords').textContent = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+                    
+                    // Em um cenário real, aqui seria feita uma chamada de API para salvar no backend.
+                    
+                    resultDiv.classList.remove('hidden');
+                    resetCheckinBtn('Check-in Realizado!');
+                    btn.classList.replace('bg-secondary', 'bg-slate-300');
+                    btn.classList.replace('hover:bg-emerald-600', 'text-slate-500');
+                    showToast('Check-in registrado com sucesso!');
+                },
+                // Erro
+                (error) => {
+                    let msg = "Erro desconhecido.";
+                    if(error.code === 1) msg = "Permissão de localização negada.";
+                    if(error.code === 2) msg = "Posição indisponível.";
+                    if(error.code === 3) msg = "Tempo limite excedido.";
+                    
+                    showToast(msg, 'error');
+                    resetCheckinBtn();
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+
+        function resetCheckinBtn(text = '<i class="fa-solid fa-map-pin"></i> Fazer Check-in Agora') {
+            const btn = document.getElementById('btn-checkin');
+            btn.innerHTML = text;
+            btn.disabled = false;
+        }
+
+        // --- UTILITÁRIOS ---
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-msg');
+            const icon = document.getElementById('toast-icon');
+
+            msgEl.textContent = message;
+            
+            if(type === 'error') {
+                toast.classList.replace('bg-slate-800', 'bg-red-600');
+                icon.className = 'fa-solid fa-circle-exclamation';
+            } else {
+                toast.classList.replace('bg-red-600', 'bg-slate-800');
+                icon.className = 'fa-solid fa-check text-secondary';
+            }
+
+            toast.classList.remove('opacity-0', '-translate-y-24');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-24');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
