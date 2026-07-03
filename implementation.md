@@ -18,19 +18,40 @@
 ## 2. O que deve ser feito (Próximos Passos Imediatos)
 - [ ] **Configurar GitHub Pages**: Ativar a branch `main` no repositório do GitHub para gerar o link público da aplicação.
 
-## 3. Novas Ideias para Implementação Criativa (Brainstorming/Roadmap)
+## 3. Hospedagem de Dados no GitHub Pages (Estratégia BaaS)
+Como o GitHub Pages hospeda apenas arquivos estáticos (HTML/CSS/JS), a melhor forma de ter um banco de dados real na nuvem é utilizar um **BaaS (Backend as a Service)**. As opções ideais para essa arquitetura são:
+- **Google Sheets (Favorito para MVPs):** Usar o Google Apps Script para receber os dados do app e salvar em uma planilha do Google em tempo real. A família pode acompanhar tudo pelo Excel online.
+- **Firebase / Supabase:** Bancos de dados NoSQL/SQL na nuvem com SDK em JavaScript puro. O app envia o JSON direto para a nuvem sem precisar de um servidor Node.js intermediário.
+- **GitHub Gists API:** Usar a própria API do GitHub para ler e escrever arquivos JSON privados de forma dinâmica, transformando o GitHub em um mini banco de dados.
 
-### 3.1. Sistema de Notificações e Alertas (Gestão de Risco)
-- **Alerta de Sinais Vitais Alterados**: Se a cuidadora registrar uma pressão arterial de risco (ex: `160x100`) ou febre alta (Temp > `37.8`), a interface poderia piscar em vermelho e exibir um aviso imediato: *"Atenção: Sinais vitais anormais detectados. Deseja notificar o enfermeiro/familiar responsável?"*.
-- **Lembretes de Medicação**: Uma nova área da aplicação onde a família/gestão cadastra a prescrição. A aplicação emitiria notificações web (push notifications) na hora exata que a medicação deve ser dada.
+## 4. 10 Novas Ideias de Features para Implementação (Brainstorming/Roadmap)
 
-### 3.2. Exportação e Compartilhamento Ágil
-- **Resumo via WhatsApp**: Adicionar um botão no histórico para *"Compartilhar Plantão"*. Esse botão formataria as anotações num texto padrão e abriria o WhatsApp com o resumo pronto para ser enviado no grupo da família.
-- **Relatório PDF Mensal**: Um botão na tela inicial para a gestão baixar um consolidado em PDF de todos os plantões do mês (útil para auditoria ou arquivamento).
+### 4.1. Controle de Estoque (Fraldas, Insumos e Remédios)
+- Criar uma aba onde a família cadastra o estoque inicial. O sistema subtrai automaticamente e o Dashboard acende um alerta vermelho ("Comprar Fraldas") quando o estoque atinge um nível crítico (< 10).
 
-### 3.3. Transição para Banco de Dados Real (Backend-as-a-Service)
-- Migrar do `localStorage` (que salva dados apenas no aparelho da cuidadora) para o **Firebase Realtime Database** ou **Supabase**. Isso permitirá que múltiplos familiares e gestores acompanhem o prontuário da casa simultaneamente em tempo real.
+### 4.2. Relatório por Voz (Speech-to-Text)
+- Integrar a *Web Speech API* nativa. A cuidadora clica num botão de microfone, fala, e a Inteligência Artificial do navegador transcreve o texto, evitando que ela precise digitar longos textos no celular.
 
-### 3.4. Recursos de Acessibilidade e Inteligência Artificial (UX)
-- **Relatório por Voz (Speech-to-Text)**: Adicionar um botão de microfone no campo de relatório (Ocorrências). Utilizando a *Web Speech API* nativa do navegador, a cuidadora pode apenas ditar o que aconteceu e o celular transcreve para texto, facilitando o trabalho e aumentando a riqueza dos detalhes.
-- **Tirar Foto de Curativos/Lesões**: Permitir que a cuidadora tire uma foto através do aplicativo para registrar um hematoma ou a evolução de um curativo no prontuário.
+### 4.3. Integração Direta com WhatsApp
+- Botão "Passar Plantão" no histórico. Ele formata as informações atuais em um texto legível com emojis (ex: 🌡️ Temp: 36.5, 💊 Remédios: OK) e abre automaticamente o WhatsApp pronto para enviar no grupo da família.
+
+### 4.4. Fotos de Curativos e Ocorrências
+- Permitir tirar fotos diretamente do app para registrar lesões ou curativos. O JS faz o upload para um serviço de imagem gratuito (como Cloudinary) e salva apenas a URL no prontuário.
+
+### 4.5. Quadro de Horários Dinâmico de Remédios
+- O painel Admin define horários fixos. No celular da cuidadora, a pílula do horário fica destacada em vermelho até que ela faça o "Check", evitando esquecimentos críticos.
+
+### 4.6. Escala de Humor e Dor (Pain Scale)
+- Seletores visuais simples (Emojis de Rosto Feliz, Neutro, Agitado, Com Dor). Isso cria um gráfico no Admin mostrando as flutuações de humor e dor do paciente ao longo do mês.
+
+### 4.7. Controle Rigoroso de Líquidos (Balanço Hídrico)
+- Para pacientes com restrição hídrica, botões de adição rápida: "+ 100ml Água". O app soma tudo automaticamente e alerta caso o limite diário estabelecido pela nutrição seja ultrapassado.
+
+### 4.8. Exportação de Relatório PDF para Médicos
+- O Painel Admin ganha um botão "Gerar PDF do Mês". A aplicação usa `jsPDF` para converter o histórico em um documento impresso profissional com logo, pronto para consultas médicas.
+
+### 4.9. Fila de Sincronização Offline (Modo Sem Internet)
+- Aproveitando o PWA, se a internet cair, o app salva o prontuário localmente (IndexedDB) e, assim que o 4G/Wi-Fi voltar, envia tudo para a nuvem automaticamente em background.
+
+### 4.10. Assinatura Digital do Plantão
+- Adicionar um *canvas* de desenho no HTML onde a cuidadora faz a assinatura usando o dedo na tela, gerando uma imagem em base64 e selando o prontuário para maior segurança jurídica e de auditoria.
