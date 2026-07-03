@@ -11,11 +11,12 @@
 - [x] Timeline dinâmica gerada via JavaScript para o histórico e passagem de plantão.
 - [x] Integração de Geolocalização (Check-in) capturando coordenadas reais do dispositivo.
 - [x] Envio do projeto para o repositório remoto no GitHub.
+- [x] **Painel Admin**: Criação do arquivo `admin.html` com dashboard, métricas e controle CRUD completo de registros.
+- [x] **Transformado em PWA Genuíno**: Criação dos arquivos `manifest.json`, `icon.svg` e `service-worker.js`.
+- [x] **Aprimoramento Visual (Refinamento)**: Inclusão de validações rigorosas (regex para P.A., `min/max` para demais vitais).
 
 ## 2. O que deve ser feito (Próximos Passos Imediatos)
 - [ ] **Configurar GitHub Pages**: Ativar a branch `main` no repositório do GitHub para gerar o link público da aplicação.
-- [ ] **Transformar em PWA Genuíno**: Criar os arquivos `manifest.json` e `service-worker.js` com seus respectivos ícones. Isso permitirá que a cuidadora "instale" a aplicação na tela inicial do celular, comportando-se 100% como um aplicativo nativo e rodando sem a barra do navegador.
-- [ ] **Aprimoramento Visual (Refinamento)**: Corrigir comportamentos visuais de inputs e incluir validações rigorosas (impedir preenchimento com letras em campos de pressão, etc.).
 
 ## 3. Novas Ideias para Implementação Criativa (Brainstorming/Roadmap)
 

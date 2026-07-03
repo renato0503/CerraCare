@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CerraCare - Painel Admin</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#0ea5e9', secondary: '#10b981', dark: '#0f172a' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .modal { transition: opacity 0.25s ease; }
+        body.modal-active { overflow-x: hidden; overflow-y: hidden !important; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- LOGIN DO ADMIN -->
+    <div id="login-admin" class="flex-1 flex flex-col justify-center items-center p-6 bg-slate-900 text-white z-50 absolute inset-0">
+        <div class="w-full max-w-sm bg-white/10 p-8 rounded-3xl shadow-2xl backdrop-blur-md border border-white/20 text-center">
+            <i class="fa-solid fa-user-shield text-5xl mb-4 text-primary"></i>
+            <h1 class="text-3xl font-bold tracking-tight mb-2">Painel Admin</h1>
+            <p class="text-slate-300 text-sm mb-6">Acesso restrito à gestão</p>
+            
+            <input type="password" id="admin-pass" placeholder="Senha Mestre" 
+                class="w-full px-4 py-3 mb-4 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:border-primary">
+            
+            <button onclick="loginAdmin()" class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:bg-blue-500 transition">
+                Entrar
+            </button>
+        </div>
+    </div>
+
+    <!-- PAINEL PRINCIPAL -->
+    <div id="admin-panel" class="hidden flex-1 flex flex-col h-full">
+        <!-- Header -->
+        <header class="bg-white px-6 py-4 shadow-sm z-10 flex justify-between items-center border-b border-slate-200">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-primary">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 leading-tight">Painel Gestão</h2>
+                    <p class="text-xs text-slate-500">CerraCare Admin</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <a href="index.html" class="text-slate-500 hover:text-primary transition flex items-center gap-2 text-sm font-semibold">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar ao App
+                </a>
+                <button onclick="logoutAdmin()" class="text-slate-400 hover:text-red-500 transition">
+                    <i class="fa-solid fa-power-off text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 bg-slate-100">
+            
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-file-medical"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Total de Registros</p>
+                        <h3 class="text-2xl font-bold text-slate-800" id="stat-total">0</h3>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Cuidadoras Ativas</p>
+                        <h3 class="text-2xl font-bold text-slate-800" id="stat-caregivers">0</h3>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Alertas (P.A / Febre)</p>
+                        <h3 class="text-2xl font-bold text-slate-800" id="stat-alerts">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Registros -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-800">Banco de Dados - Prontuários</h3>
+                    <button onclick="openModal('add')" class="bg-secondary text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-600 transition flex gap-2 items-center">
+                        <i class="fa-solid fa-plus"></i> Novo Registro
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                <th class="p-4 border-b border-slate-200">Data/Hora</th>
+                                <th class="p-4 border-b border-slate-200">Cuidadora</th>
+                                <th class="p-4 border-b border-slate-200">Sinais Vitais</th>
+                                <th class="p-4 border-b border-slate-200">Rotina</th>
+                                <th class="p-4 border-b border-slate-200">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="text-sm">
+                            <!-- Injetado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="empty-state" class="hidden text-center py-10 text-slate-400">
+                    Nenhum registro encontrado.
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- MODAL CRUD -->
+    <div id="crud-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="absolute w-full h-full bg-slate-900 opacity-50"></div>
+        
+        <div class="bg-white w-11/12 md:max-w-2xl mx-auto rounded-2xl shadow-2xl z-50 overflow-y-auto max-h-[90vh]">
+            <div class="py-4 text-left px-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-800" id="modal-title">Editar Registro</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <input type="hidden" id="form-id">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Cuidadora</label>
+                        <input type="text" id="form-caregiver" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Data/Hora (ISO)</label>
+                        <input type="text" id="form-date" placeholder="Ex: 2026-07-03T10:00:00.000Z" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">P.A.</label>
+                        <input type="text" id="form-pa" placeholder="120x80" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">FC</label>
+                        <input type="number" id="form-fc" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Temp</label>
+                        <input type="number" step="0.1" id="form-temp" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">SatO2</label>
+                        <input type="number" id="form-sat" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input type="checkbox" id="form-food" class="w-4 h-4 text-primary rounded"> Comeu
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input type="checkbox" id="form-meds" class="w-4 h-4 text-primary rounded"> Medicação
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input type="checkbox" id="form-wc" class="w-4 h-4 text-primary rounded"> WC
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Ocorrências / Notas</label>
+                    <textarea id="form-notes" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-2xl">
+                <button onclick="closeModal()" class="px-4 py-2 text-slate-500 font-medium hover:text-slate-700 transition">Cancelar</button>
+                <button onclick="saveRecord()" class="px-6 py-2 bg-primary text-white font-bold rounded-lg shadow hover:bg-blue-600 transition">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl transition-all duration-300 transform -translate-y-24 opacity-0 z-50 flex items-center gap-3 text-sm font-medium">
+        <span id="toast-msg">Mensagem</span>
+    </div>
+
+    <script>
+        // --- AUTENTICAÇÃO SIMULADA ---
+        function loginAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === 'admin123') { // Senha hardcoded para MVP
+                sessionStorage.setItem('cerraCare_admin_logged', 'true');
+                document.getElementById('login-admin').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                renderAdmin();
+            } else {
+                showToast('Senha Incorreta!', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('cerraCare_admin_logged');
+            document.getElementById('login-admin').classList.remove('hidden');
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('admin-pass').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('cerraCare_admin_logged') === 'true') {
+                document.getElementById('login-admin').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                renderAdmin();
+            }
+        });
+
+        // --- DADOS ---
+        function getRecords() {
+            return JSON.parse(localStorage.getItem('cerraCare_records')) || [];
+        }
+
+        function saveToStorage(records) {
+            localStorage.setItem('cerraCare_records', JSON.stringify(records));
+            renderAdmin(); // Atualiza a view
+        }
+
+        // --- RENDERIZAÇÃO ---
+        function renderAdmin() {
+            const records = getRecords();
+            const tbody = document.getElementById('table-body');
+            const emptyState = document.getElementById('empty-state');
+            
+            tbody.innerHTML = '';
+            
+            // Dashboard Stats
+            document.getElementById('stat-total').textContent = records.length;
+            const caregivers = new Set(records.map(r => r.caregiver)).size;
+            document.getElementById('stat-caregivers').textContent = caregivers;
+            
+            let alertCount = 0;
+
+            if (records.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                
+                records.forEach(r => {
+                    const d = new Date(r.date);
+                    
+                    // Checagem de alertas simples (Pressão Alta > 140x90 ou Febre > 37.8)
+                    let isAlert = false;
+                    if (r.vitals.temp && parseFloat(r.vitals.temp) > 37.8) isAlert = true;
+                    if (r.vitals.pa) {
+                        const parts = r.vitals.pa.split('x');
+                        if (parts.length === 2 && (parseInt(parts[0]) > 140 || parseInt(parts[1]) > 90)) {
+                            isAlert = true;
+                        }
+                    }
+                    if(isAlert) alertCount++;
+
+                    let vitals = [];
+                    if(r.vitals.pa) vitals.push(`PA:${r.vitals.pa}`);
+                    if(r.vitals.fc) vitals.push(`FC:${r.vitals.fc}`);
+                    if(r.vitals.temp) vitals.push(`T:${r.vitals.temp}`);
+                    if(r.vitals.sat) vitals.push(`O2:${r.vitals.sat}%`);
+
+                    let badges = '';
+                    if(r.routine.food) badges += `<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold mr-1">C</span>`;
+                    if(r.routine.meds) badges += `<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold mr-1">M</span>`;
+                    if(r.routine.wc) badges += `<span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-bold mr-1">W</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = `border-b border-slate-100 hover:bg-slate-50 transition ${isAlert ? 'bg-red-50/50' : ''}`;
+                    tr.innerHTML = `
+                        <td class="p-4 text-slate-500">
+                            ${d.toLocaleDateString('pt-BR')} <br>
+                            <span class="text-xs font-bold ${isAlert ? 'text-red-500' : 'text-slate-800'}">${d.toLocaleTimeString('pt-BR')}</span>
+                            ${isAlert ? '<i class="fa-solid fa-triangle-exclamation text-red-500 ml-1" title="Alerta de Risco"></i>' : ''}
+                        </td>
+                        <td class="p-4 font-semibold text-slate-700">${r.caregiver || 'Sem Nome'}</td>
+                        <td class="p-4 text-slate-500 font-mono text-xs">${vitals.join(' | ')}</td>
+                        <td class="p-4">${badges}</td>
+                        <td class="p-4 flex gap-2">
+                            <button onclick="openModal('edit', ${r.id})" class="text-primary hover:text-blue-700 p-2 bg-blue-50 rounded-lg transition"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteRecord(${r.id})" class="text-red-500 hover:text-red-700 p-2 bg-red-50 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            
+            document.getElementById('stat-alerts').textContent = alertCount;
+        }
+
+        // --- CRUD AÇÕES ---
+        function deleteRecord(id) {
+            if(confirm("Certeza que deseja remover este registro permanentemente?")) {
+                let records = getRecords();
+                records = records.filter(r => r.id !== id);
+                saveToStorage(records);
+                showToast("Registro excluído com sucesso.");
+            }
+        }
+
+        // --- MODAL ---
+        const modal = document.getElementById('crud-modal');
+        let currentAction = 'add'; // 'add' ou 'edit'
+
+        function openModal(action, id = null) {
+            currentAction = action;
+            document.getElementById('modal-title').textContent = action === 'add' ? 'Adicionar Registro' : 'Editar Registro';
+            
+            if (action === 'edit') {
+                const records = getRecords();
+                const r = records.find(x => x.id === id);
+                if(r) {
+                    document.getElementById('form-id').value = r.id;
+                    document.getElementById('form-caregiver').value = r.caregiver;
+                    document.getElementById('form-date').value = r.date;
+                    document.getElementById('form-pa').value = r.vitals.pa || '';
+                    document.getElementById('form-fc').value = r.vitals.fc || '';
+                    document.getElementById('form-temp').value = r.vitals.temp || '';
+                    document.getElementById('form-sat').value = r.vitals.sat || '';
+                    document.getElementById('form-food').checked = r.routine.food || false;
+                    document.getElementById('form-meds').checked = r.routine.meds || false;
+                    document.getElementById('form-wc').checked = r.routine.wc || false;
+                    document.getElementById('form-notes').value = r.notes || '';
+                }
+            } else {
+                // Add mode clear
+                document.getElementById('form-id').value = '';
+                document.getElementById('form-caregiver').value = '';
+                document.getElementById('form-date').value = new Date().toISOString();
+                document.getElementById('form-pa').value = '';
+                document.getElementById('form-fc').value = '';
+                document.getElementById('form-temp').value = '';
+                document.getElementById('form-sat').value = '';
+                document.getElementById('form-food').checked = false;
+                document.getElementById('form-meds').checked = false;
+                document.getElementById('form-wc').checked = false;
+                document.getElementById('form-notes').value = '';
+            }
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.classList.remove('modal-active');
+        }
+
+        function saveRecord() {
+            let records = getRecords();
+            const idVal = document.getElementById('form-id').value;
+            
+            const newRecord = {
+                id: idVal ? parseInt(idVal) : Date.now(),
+                date: document.getElementById('form-date').value || new Date().toISOString(),
+                caregiver: document.getElementById('form-caregiver').value,
+                vitals: {
+                    pa: document.getElementById('form-pa').value,
+                    fc: document.getElementById('form-fc').value,
+                    temp: document.getElementById('form-temp').value,
+                    sat: document.getElementById('form-sat').value
+                },
+                routine: {
+                    food: document.getElementById('form-food').checked,
+                    meds: document.getElementById('form-meds').checked,
+                    wc: document.getElementById('form-wc').checked
+                },
+                notes: document.getElementById('form-notes').value
+            };
+
+            if (currentAction === 'add') {
+                records.unshift(newRecord);
+                // Re-sort in descending order
+                records.sort((a,b) => new Date(b.date) - new Date(a.date));
+            } else {
+                const index = records.findIndex(r => r.id === newRecord.id);
+                if (index !== -1) {
+                    records[index] = newRecord;
+                }
+            }
+
+            saveToStorage(records);
+            closeModal();
+            showToast('Dados salvos com sucesso!');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#10b981';
+            
+            toast.classList.remove('opacity-0', '-translate-y-24');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-24');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
