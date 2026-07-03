@@ -14,6 +14,7 @@
 - [x] **Painel Admin**: Criação do arquivo `admin.html` com dashboard, métricas e controle CRUD completo de registros.
 - [x] **Transformado em PWA Genuíno**: Criação dos arquivos `manifest.json`, `icon.svg` e `service-worker.js`.
 - [x] **Aprimoramento Visual (Refinamento)**: Inclusão de validações rigorosas (regex para P.A., `min/max` para demais vitais).
+- [x] **Checklist Dinâmico de Medicações**: Criação de gerenciador de remédios no Admin e alteração do prontuário para suportar seleção de múltiplos remédios de forma dinâmica e retrocompatível.
 
 ## 2. O que deve ser feito (Próximos Passos Imediatos)
 - [ ] **Configurar GitHub Pages**: Ativar a branch `main` no repositório do GitHub para gerar o link público da aplicação.
