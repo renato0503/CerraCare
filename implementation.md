@@ -14,45 +14,42 @@
 - [x] **Painel Admin**: Criação do arquivo `admin.html` com dashboard, métricas e controle CRUD completo de registros.
 - [x] **Transformado em PWA Genuíno**: Criação dos arquivos `manifest.json`, `icon.svg` e `service-worker.js`.
 - [x] **Aprimoramento Visual (Refinamento)**: Inclusão de validações rigorosas (regex para P.A., `min/max` para demais vitais).
-- [x] **Checklist Dinâmico de Medicações**: Criação de gerenciador de remédios no Admin e alteração do prontuário para suportar seleção de múltiplos remédios de forma dinâmica e retrocompatível.
+- [x] **Checklist Dinâmico de Medicações**: Criação de gerenciador de remédios no Admin e alteração do prontuário para suportar seleção de múltiplos remédios.
+- [x] **GitHub Pages**: Ativado em `https://renato0503.github.io/CerraCare/`.
+- [x] **Cache PWA do Admin**: `admin.html` adicionado ao `service-worker.js` e registro PWA no admin.
+- [x] **Correção Botão Check-in**: Botão agora reseta automaticamente após 5 segundos.
+- [x] **Substituição Mapa Estático**: Link funcional para Google Maps com coordenadas reais.
+- [x] **Senha Admin Configurável**: Senha salva no `localStorage` com UI para alteração.
+- [x] **Controle de Estoque**: Admin cadastra itens com thresholds; cuidadora registra retiradas e reposições; alertas de estoque baixo.
+- [x] **Relatório por Voz (Speech-to-Text)**: Botão de microfone no textarea usando Web Speech API (pt-BR).
+- [x] **Integração com WhatsApp**: Botão no histórico que abre WhatsApp com resumo formatado do plantão.
+- [x] **Fotos de Curativos/Ocorrências**: Captura via câmera, preview com miniaturas, armazenamento no IndexedDB.
+- [x] **Quadro de Horários Dinâmico de Remédios**: Admin define horários; cuidadora vê status colorido (futuro/atual/atrasado).
+- [x] **Escala de Humor e Dor**: Slider 0-5 + 5 emojis no prontuário; gráfico de barras no Admin.
+- [x] **Balanço Hídrico**: Botões de adição rápida (+50 a +500ml), barra de progresso, alerta ao ultrapassar limite.
+- [x] **Exportação de Relatório PDF**: Botão no Admin gera PDF A4 com jsPDF.
+- [x] **Fila de Sincronização Offline**: Registros salvos vão para fila no IndexedDB; dashboard mostra pendentes.
+- [x] **Assinatura Digital**: Canvas touch/mouse no prontuário, salva como base64 e exibida no histórico.
 
-## 2. O que deve ser feito (Próximos Passos Imediatos)
-- [ ] **Configurar GitHub Pages**: Ativar a branch `main` no repositório do GitHub para gerar o link público da aplicação.
+## 2. Próximos Passos (Roadmap Futuro)
 
-## 3. Hospedagem de Dados no GitHub Pages (Estratégia BaaS)
-Como o GitHub Pages hospeda apenas arquivos estáticos (HTML/CSS/JS), a melhor forma de ter um banco de dados real na nuvem é utilizar um **BaaS (Backend as a Service)**. As opções ideais para essa arquitetura são:
-- **Google Sheets (Favorito para MVPs):** Usar o Google Apps Script para receber os dados do app e salvar em uma planilha do Google em tempo real. A família pode acompanhar tudo pelo Excel online.
-- **Firebase / Supabase:** Bancos de dados NoSQL/SQL na nuvem com SDK em JavaScript puro. O app envia o JSON direto para a nuvem sem precisar de um servidor Node.js intermediário.
-- **GitHub Gists API:** Usar a própria API do GitHub para ler e escrever arquivos JSON privados de forma dinâmica, transformando o GitHub em um mini banco de dados.
+### 2.1. Backend Real (BaaS)
+O app atualmente é 100% client-side. Para compartilhar dados entre dispositivos:
+- **Google Sheets + Google Apps Script**: Receber dados do app e salvar em planilha. A família acompanha pelo Excel online.
+- **Firebase / Supabase**: Bancos de dados na nuvem com SDK JavaScript puro.
+- **GitHub Gists API**: Ler/escrever arquivos JSON privados como mini banco de dados.
 
-## 4. 10 Novas Ideias de Features para Implementação (Brainstorming/Roadmap)
+### 2.2. Melhorias de UX
+- **Ícones PWA PNG**: Gerar ícones em múltiplos tamanhos (192x192, 512x512) para melhor suporte em iOS/Android.
+- **Notificações Push**: Lembretes de horários de medicação via Push API.
+- **Tema Escuro**: Suporte a dark mode.
 
-### 4.1. Controle de Estoque (Fraldas, Insumos e Remédios)
-- Criar uma aba onde a família cadastra o estoque inicial. O sistema subtrai automaticamente e o Dashboard acende um alerta vermelho ("Comprar Fraldas") quando o estoque atinge um nível crítico (< 10).
+### 2.3. Funcionalidades Avançadas
+- **Sincronização Real**: Ao configurar um backend, a fila do IndexedDB envia dados automaticamente quando online.
+- **Gráficos Avançados**: Integrar Chart.js para tendências de vitais, dor e humor ao longo do tempo.
+- **Multi-Paciente**: Suporte a mais de um paciente por cuidadora.
+- **Exportação CSV**: Alternativa ao PDF para análise em planilhas.
 
-### 4.2. Relatório por Voz (Speech-to-Text)
-- Integrar a *Web Speech API* nativa. A cuidadora clica num botão de microfone, fala, e a Inteligência Artificial do navegador transcreve o texto, evitando que ela precise digitar longos textos no celular.
-
-### 4.3. Integração Direta com WhatsApp
-- Botão "Passar Plantão" no histórico. Ele formata as informações atuais em um texto legível com emojis (ex: 🌡️ Temp: 36.5, 💊 Remédios: OK) e abre automaticamente o WhatsApp pronto para enviar no grupo da família.
-
-### 4.4. Fotos de Curativos e Ocorrências
-- Permitir tirar fotos diretamente do app para registrar lesões ou curativos. O JS faz o upload para um serviço de imagem gratuito (como Cloudinary) e salva apenas a URL no prontuário.
-
-### 4.5. Quadro de Horários Dinâmico de Remédios
-- O painel Admin define horários fixos. No celular da cuidadora, a pílula do horário fica destacada em vermelho até que ela faça o "Check", evitando esquecimentos críticos.
-
-### 4.6. Escala de Humor e Dor (Pain Scale)
-- Seletores visuais simples (Emojis de Rosto Feliz, Neutro, Agitado, Com Dor). Isso cria um gráfico no Admin mostrando as flutuações de humor e dor do paciente ao longo do mês.
-
-### 4.7. Controle Rigoroso de Líquidos (Balanço Hídrico)
-- Para pacientes com restrição hídrica, botões de adição rápida: "+ 100ml Água". O app soma tudo automaticamente e alerta caso o limite diário estabelecido pela nutrição seja ultrapassado.
-
-### 4.8. Exportação de Relatório PDF para Médicos
-- O Painel Admin ganha um botão "Gerar PDF do Mês". A aplicação usa `jsPDF` para converter o histórico em um documento impresso profissional com logo, pronto para consultas médicas.
-
-### 4.9. Fila de Sincronização Offline (Modo Sem Internet)
-- Aproveitando o PWA, se a internet cair, o app salva o prontuário localmente (IndexedDB) e, assim que o 4G/Wi-Fi voltar, envia tudo para a nuvem automaticamente em background.
-
-### 4.10. Assinatura Digital do Plantão
-- Adicionar um *canvas* de desenho no HTML onde a cuidadora faz a assinatura usando o dedo na tela, gerando uma imagem em base64 e selando o prontuário para maior segurança jurídica e de auditoria.
+### 2.4. Segurança
+- **Hash de Senha**: Implementar hash simples (SHA-256) para a senha do admin.
+- **Criptografia de Dados**: Criptografar dados sensíveis no localStorage/IndexedDB.

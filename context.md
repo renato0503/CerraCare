@@ -7,23 +7,51 @@ CerraCare é um MVP (Minimum Viable Product) de um Prontuário Eletrônico e Sis
 - **Linguagens**: HTML5, JavaScript Vanilla (ES6+)
 - **Estilização**: Tailwind CSS (via CDN) e CSS personalizado para animações e componentes específicos (como os toggles).
 - **Ícones**: FontAwesome
-- **Armazenamento de Dados**: `localStorage` (persistência de dados no navegador, simulando um banco de dados).
+- **Armazenamento de Dados**: `localStorage` (persistência principal) e `IndexedDB` (fotos e fila de sincronização).
+- **PWA**: `manifest.json`, `icon.svg` e `service-worker.js`.
+- **Bibliotecas Externas**: jsPDF (via CDN) para exportação de relatórios PDF.
+- **APIs Nativas**: Web Speech API (reconhecimento de voz), Geolocation API, Canvas API (assinatura digital).
 
-## Histórico de Ações
-1. **Desenvolvimento do MVP (Single-Page Application)**:
-   - Criação de toda a estrutura no arquivo `index.html`.
-   - Implementação do design responsivo com cores primárias em tons de azul e verde (Emerald/Sky).
-2. **Deploy Inicial**:
-   - Inicialização do repositório Git local.
-   - Sincronização (`git pull rebase` e `git push`) para o repositório remoto no GitHub (`https://github.com/renato0503/CerraCare`).
+## Deploy
+- **GitHub Pages**: `https://renato0503.github.io/CerraCare/`
+- **Repositório**: `https://github.com/renato0503/CerraCare`
 
 ## Módulos Presentes no MVP
+
+### App da Cuidadora (`index.html`)
 - **Autenticação Simulada**: Login simples baseado no nome da cuidadora para assinatura de turno.
-- **Prontuário (Registro de Rotina)**: 
-  - Registro de Sinais Vitais (P.A., FC, Temperatura, Sat. O2).
+- **Prontuário (Registro de Rotina)**:
+  - Sinais Vitais (P.A., FC, Temperatura, Sat. O2) com validações rigorosas.
+  - Escala de Dor (0-5) e Humor (5 emojis selecionáveis).
   - Rotina de cuidados via Toggles (Alimentação, Medicação, Diurese/Evacuação).
-  - Área de texto para relatório do plantão e qualidade do sono.
+  - Checklist dinâmico de medicações (gerenciado pelo Admin).
+  - Quadro de Horários de Medicação com alertas visuais (futuro/atual/atrasado).
+  - Balanço Hídrico com botões de adição rápida e barra de progresso.
+  - Relatório por Voz (Speech-to-Text via Web Speech API).
+  - Captura de Fotos (armazenadas no IndexedDB).
+  - Assinatura Digital via Canvas (touch/mouse).
 - **Histórico (Passagem de Plantão)**:
-  - Timeline lendo os registros armazenados localmente e renderizando cards de forma cronológica reversa (mais recentes primeiro) contendo os dados do plantão.
+  - Timeline cronológica reversa com cards contendo vitais, rotina, dor/humor, hidratação.
+  - Botão de compartilhamento via WhatsApp com texto formatado.
 - **Check-in / Geolocalização**:
-  - Simulação de ponto/presença capturando as coordenadas via API nativa do navegador (`navigator.geolocation`) e registrando a hora exata da batida do ponto.
+  - Captura de coordenadas via `navigator.geolocation`.
+  - Link para visualização no Google Maps.
+- **Controle de Estoque**:
+  - Visualização de itens cadastrados com indicadores coloridos (normal/baixo/crítico).
+  - Botões de retirada rápida (-1, -2, -5) e reposição.
+  - Log de movimentações.
+
+### Painel Admin (`admin.html`)
+- **Dashboard**: Total de registros, cuidadoras ativas, alertas (PA/Febre/Estoque), pendentes de sync.
+- **CRUD de Registros**: Tabela com edição/exclusão, modal de formulário completo.
+- **Gerenciador de Medicações**: Cadastro da lista de remédios para checklist da cuidadora.
+- **Horários de Medicação**: Cadastro de nome + horários (ex: 08:00, 20:00).
+- **Controle de Estoque**: Cadastro de itens, quantidades, unidades e thresholds de alerta.
+- **Gráfico de Dor/Humor**: Barras dos últimos 10 registros com emojis.
+- **Exportação PDF**: Geração de relatório A4 com jsPDF.
+- **Fila de Sincronização**: Indicador de itens pendentes no IndexedDB.
+- **Senha Configurável**: Senha do admin armazenada no localStorage, alterável via interface.
+
+### PWA
+- `manifest.json` com ícone SVG, theme-color, modo standalone.
+- `service-worker.js` com cache de `index.html`, `admin.html`, `icon.svg` e `manifest.json`.
