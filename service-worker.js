@@ -2,6 +2,7 @@ const CACHE_NAME = 'cerracare-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './admin.html',
   './icon.svg',
   './manifest.json'
 ];
