@@ -132,6 +132,30 @@
                     </div>
                 </div>
 
+                <!-- Escala de Dor e Humor -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-face-smile text-amber-500"></i> Escala de Dor e Humor
+                    </h3>
+                    <div class="mb-4">
+                        <label class="block text-xs font-medium text-slate-500 mb-2">Nível de Dor (0-5)</label>
+                        <div class="flex gap-2">
+                            <input type="range" id="pain-level" min="0" max="5" value="0" class="flex-1 accent-red-500" oninput="document.getElementById('pain-value').textContent = this.value">
+                            <span id="pain-value" class="text-sm font-bold text-slate-700 w-4">0</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-2">Humor do Paciente</label>
+                        <div class="flex justify-between gap-1">
+                            <button type="button" onclick="selectHumor('muito_triste')" class="humor-btn flex-1 flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-slate-300 transition text-2xl" data-humor="muito_triste">😫<span class="text-[10px] text-slate-500 mt-1">Muito Triste</span></button>
+                            <button type="button" onclick="selectHumor('triste')" class="humor-btn flex-1 flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-slate-300 transition text-2xl" data-humor="triste">😢<span class="text-[10px] text-slate-500 mt-1">Triste</span></button>
+                            <button type="button" onclick="selectHumor('neutro')" class="humor-btn flex-1 flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-slate-300 transition text-2xl" data-humor="neutro">😐<span class="text-[10px] text-slate-500 mt-1">Neutro</span></button>
+                            <button type="button" onclick="selectHumor('feliz')" class="humor-btn flex-1 flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-slate-300 transition text-2xl" data-humor="feliz">🙂<span class="text-[10px] text-slate-500 mt-1">Feliz</span></button>
+                            <button type="button" onclick="selectHumor('muito_feliz')" class="humor-btn flex-1 flex flex-col items-center p-2 rounded-xl border-2 border-transparent hover:border-slate-300 transition text-2xl" data-humor="muito_feliz">😄<span class="text-[10px] text-slate-500 mt-1">Muito Feliz</span></button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Rotina e Cuidados -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -167,12 +191,75 @@
                     </div>
                 </div>
 
+                <!-- Horários de Medicação -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100" id="med-schedule-card">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-clock text-orange-500"></i> Horários de Medicação
+                    </h3>
+                    <div id="med-schedule-display" class="space-y-2">
+                        <p class="text-xs text-slate-400 italic">Nenhum horário de medicação cadastrado no Admin.</p>
+                    </div>
+                </div>
+
+                <!-- Balanço Hídrico -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-droplet text-cyan-500"></i> Balanço Hídrico
+                    </h3>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-slate-500">Total hoje: <span id="hydric-total" class="font-bold text-cyan-600">0</span> ml</span>
+                        <span class="text-xs text-slate-400">Limite: <span id="hydric-limit">2000</span> ml</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button onclick="addHydric(50)" class="px-3 py-1.5 bg-cyan-50 border border-cyan-200 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-100 transition">+50ml</button>
+                        <button onclick="addHydric(100)" class="px-3 py-1.5 bg-cyan-50 border border-cyan-200 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-100 transition">+100ml</button>
+                        <button onclick="addHydric(200)" class="px-3 py-1.5 bg-cyan-50 border border-cyan-200 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-100 transition">+200ml</button>
+                        <button onclick="addHydric(300)" class="px-3 py-1.5 bg-cyan-50 border border-cyan-200 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-100 transition">+300ml</button>
+                        <button onclick="addHydric(500)" class="px-3 py-1.5 bg-cyan-50 border border-cyan-200 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-100 transition">+500ml</button>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                        <div id="hydric-bar" class="bg-cyan-500 h-full rounded-full transition-all" style="width:0%"></div>
+                    </div>
+                    <div class="flex justify-between mt-1">
+                        <span class="text-[10px] text-slate-400">0</span>
+                        <span class="text-[10px] text-slate-400" id="hydric-limit-label">2000ml</span>
+                    </div>
+                </div>
+
                 <!-- Ocorrências / Relatório -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-pen text-amber-500"></i> Relatório / Sono
+                        <button onclick="startSpeech()" id="mic-btn" class="ml-auto text-slate-400 hover:text-red-500 transition p-1.5 bg-slate-100 rounded-lg" title="Ditar relatório por voz">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
                     </h3>
                     <textarea id="notes" rows="4" placeholder="Descreva as ocorrências do turno, como o paciente dormiu, etc..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition resize-none"></textarea>
+                </div>
+
+                <!-- Fotos de Curativos / Ocorrências -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-camera text-pink-500"></i> Fotos
+                    </h3>
+                    <div class="flex flex-wrap gap-3 mb-3" id="photo-preview">
+                    </div>
+                    <input type="file" id="photo-input" accept="image/*" capture="environment" class="hidden" onchange="addPhoto(event)">
+                    <button onclick="document.getElementById('photo-input').click()" class="w-full bg-pink-50 border-2 border-dashed border-pink-200 text-pink-600 rounded-xl py-3 text-sm font-bold hover:bg-pink-100 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Tirar Foto / Anexar Imagem
+                    </button>
+                </div>
+
+                <!-- Assinatura Digital -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-signature text-indigo-500"></i> Assinatura do Plantão
+                    </h3>
+                    <canvas id="signature-canvas" class="w-full bg-slate-50 border border-slate-200 rounded-xl touch-none" height="120" style="height:120px"></canvas>
+                    <div class="flex justify-between mt-2">
+                        <button onclick="clearSignature()" class="text-xs text-slate-400 hover:text-red-500 transition">Limpar</button>
+                        <span class="text-xs text-slate-400">Desenhe com o dedo ou mouse</span>
+                    </div>
                 </div>
 
                 <!-- Salvar -->
@@ -292,6 +379,10 @@
 
         // --- ESTADO DA APLICAÇÃO ---
         let currentUser = localStorage.getItem('cerraCare_user') || null;
+        let selectedHumor = 'neutro';
+        let pendingPhotos = [];
+        let drawing = false;
+        let signatureCanvas, sigCtx;
         
         // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -306,10 +397,12 @@
             paInput.addEventListener('input', function(e) {
                 let val = e.target.value.replace(/[^0-9xX]/g, '').toLowerCase();
                 if ((val.match(/x/g) || []).length > 1) {
-                    val = val.replace(/x$/, ''); // Remove extra 'x'
+                    val = val.replace(/x$/, '');
                 }
                 e.target.value = val;
             });
+
+            initSignature();
         });
 
         // --- MÓDULO: AUTENTICAÇÃO ---
@@ -338,6 +431,8 @@
             document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('current-user-display').textContent = currentUser;
             renderCaregiverMeds();
+            renderHydric();
+            renderMedSchedule();
             switchTab('prontuario');
         }
 
@@ -378,6 +473,7 @@
             // Ações específicas por aba
             if(tabId === 'historico') loadTimeline();
             if(tabId === 'estoque') renderInventory();
+            if(tabId === 'prontuario') { renderHydric(); renderMedSchedule(); }
         }
 
         // --- MÓDULO: PRONTUÁRIO (CRUD LOCALSTORAGE) ---
@@ -392,6 +488,8 @@
             const wc = document.getElementById('toggle-wc').checked;
             
             const notes = document.getElementById('notes').value;
+            const pain = parseInt(document.getElementById('pain-level').value) || 0;
+            const sigData = signatureCanvas ? signatureCanvas.toDataURL() : '';
 
             // Validação básica
             if(!pa && !fc && !temp && !sat && !notes) {
@@ -410,8 +508,9 @@
                 date: new Date().toISOString(),
                 caregiver: currentUser,
                 vitals: { pa, fc, temp, sat },
-                routine: { food, meds, wc },
-                notes: notes
+                routine: { food, meds, wc, pain, humor: selectedHumor, hydric: getHydricToday() },
+                notes: notes,
+                signature: sigData
             };
 
             // Recuperar registros existentes
@@ -420,6 +519,9 @@
             records.unshift(record);
             // Salvar no LocalStorage
             localStorage.setItem('cerraCare_records', JSON.stringify(records));
+
+            savePhotosForRecord(record.id);
+            addToSyncQueue(record);
 
             showToast('Prontuário salvo com sucesso!');
             clearForm();
@@ -434,6 +536,16 @@
             document.querySelectorAll('.caregiver-med-cb').forEach(cb => cb.checked = false);
             document.getElementById('toggle-wc').checked = false;
             document.getElementById('notes').value = '';
+            document.getElementById('pain-level').value = 0;
+            document.getElementById('pain-value').textContent = '0';
+            selectedHumor = 'neutro';
+            document.querySelectorAll('.humor-btn').forEach(b => b.classList.remove('border-primary', 'bg-blue-50'));
+            const neutroBtn = document.querySelector('.humor-btn[data-humor="neutro"]');
+            if (neutroBtn) { neutroBtn.classList.add('border-primary', 'bg-blue-50'); }
+            clearSignature();
+            pendingPhotos = [];
+            renderPhotoPreviews();
+            renderHydric();
         }
 
         // --- MÓDULO: HISTÓRICO ---
@@ -464,6 +576,7 @@
                 }
 
                 if(record.routine.wc) badges += `<span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">Diurese/Evac.</span> `;
+                if(record.routine.pain !== undefined) badges += `<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">Dor ${record.routine.pain}/5</span> `;
 
                 // Montar vitais resumidos
                 let vitalsText = [];
@@ -481,9 +594,24 @@
                     </div>`;
                 }
 
+                let painHtml = '';
+                if(record.routine.pain !== undefined) {
+                    const emojis = { 'muito_triste': '😫', 'triste': '😢', 'neutro': '😐', 'feliz': '🙂', 'muito_feliz': '😄' };
+                    const emoji = emojis[record.routine.humor] || '😐';
+                    painHtml = `<div class="mt-2 text-xs text-slate-600 bg-amber-50 p-2 rounded border border-amber-100">
+                        <span class="font-bold text-amber-800">Dor:</span> ${record.routine.pain}/5 ${emoji}
+                    </div>`;
+                }
+
+                let hydricHtml = '';
+                if(record.routine.hydric > 0) {
+                    hydricHtml = `<div class="mt-2 text-xs text-slate-600 bg-cyan-50 p-2 rounded border border-cyan-100">
+                        <i class="fa-solid fa-droplet text-cyan-500"></i> Líquidos: ${record.routine.hydric}ml
+                    </div>`;
+                }
+
                 const cardHtml = `
                     <div class="relative pl-6 mb-6 last:mb-0">
-                        <!-- Ponto na timeline -->
                         <div class="absolute w-4 h-4 bg-primary rounded-full -left-[9px] top-1 border-4 border-slate-50"></div>
                         
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
@@ -492,13 +620,21 @@
                                     <h4 class="text-sm font-bold text-slate-800">${record.caregiver}</h4>
                                     <p class="text-xs text-slate-400">${dateStr} às ${timeStr}</p>
                                 </div>
-                                <div class="flex gap-1">${badges}</div>
+                                <div class="flex gap-1 items-start">
+                                    <div class="flex flex-wrap gap-1">${badges}</div>
+                                    <button onclick="shareWhatsApp(${record.id})" class="text-green-500 hover:text-green-600 p-1.5 bg-green-50 rounded-lg transition ml-1" title="Compartilhar via WhatsApp">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </button>
+                                </div>
                             </div>
                             
                             ${vitalsSummary}
                             ${medsListHtml}
+                            ${painHtml}
+                            ${hydricHtml}
                             
                             ${record.notes ? `<p class="text-sm text-slate-600 mt-3 italic border-l-2 border-slate-200 pl-2">"${record.notes}"</p>` : ''}
+                            ${record.signature ? `<div class="mt-3"><img src="${record.signature}" class="h-10 border border-slate-200 rounded" alt="Assinatura"></div>` : ''}
                         </div>
                     </div>
                 `;
@@ -690,7 +826,236 @@
             });
         }
 
-        // --- UTILITÁRIOS ---
+        // --- ESCALA DE HUMOR ---
+        function selectHumor(humor) {
+            selectedHumor = humor;
+            document.querySelectorAll('.humor-btn').forEach(b => {
+                b.classList.remove('border-primary', 'bg-blue-50');
+            });
+            const btn = document.querySelector(`.humor-btn[data-humor="${humor}"]`);
+            if (btn) { btn.classList.add('border-primary', 'bg-blue-50'); }
+        }
+
+        // --- QUADRO DE HORÁRIOS DE REMÉDIOS ---
+        function getMedSchedule() {
+            return JSON.parse(localStorage.getItem('cerraCare_medSchedule')) || [];
+        }
+
+        function renderMedSchedule() {
+            const container = document.getElementById('med-schedule-display');
+            if (!container) return;
+            const sched = getMedSchedule();
+            if (sched.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 italic">Nenhum horario de medicacao cadastrado no Admin.</p>';
+                return;
+            }
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+
+            container.innerHTML = sched.map(item => {
+                const timeSlots = item.times.map(t => {
+                    const [h, m] = t.split(':').map(Number);
+                    const mins = h * 60 + m;
+                    const diff = currentTime - mins;
+                    let status = 'pending';
+                    let color = 'border-slate-200 bg-slate-50';
+                    let icon = '<i class="fa-solid fa-clock text-slate-400 text-xs"></i>';
+                    if (diff > 60) { status = 'overdue'; color = 'border-red-300 bg-red-50'; icon = '<i class="fa-solid fa-circle-exclamation text-red-500 text-xs"></i>'; }
+                    else if (diff > 0 && diff <= 60) { status = 'now'; color = 'border-amber-300 bg-amber-50'; icon = '<i class="fa-solid fa-hourglass-half text-amber-500 text-xs"></i>'; }
+                    return { time: t, status, color, icon };
+                });
+                return `<div class="p-3 rounded-xl border ${timeSlots.some(ts => ts.status === 'overdue') ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-slate-50'}">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-slate-700">${item.name}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                        ${timeSlots.map(ts => `
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${ts.color}">
+                                ${ts.icon} ${ts.time}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- BALANÇO HÍDRICO ---
+        function getHydricToday() {
+            const today = new Date().toISOString().slice(0, 10);
+            const items = JSON.parse(localStorage.getItem('cerraCare_hydric') || '[]');
+            return items.filter(i => i.date.slice(0, 10) === today).reduce((sum, i) => sum + i.quantity, 0);
+        }
+
+        function addHydric(ml) {
+            const items = JSON.parse(localStorage.getItem('cerraCare_hydric') || '[]');
+            items.push({ date: new Date().toISOString(), quantity: ml, caregiver: currentUser });
+            localStorage.setItem('cerraCare_hydric', JSON.stringify(items));
+            renderHydric();
+            const limit = parseInt(localStorage.getItem('cerraCare_hydricLimit') || '2000');
+            const total = getHydricToday();
+            if (total > limit) showToast(`Atencao: limite hidrico diario de ${limit}ml ultrapassado!`, 'error');
+        }
+
+        function renderHydric() {
+            const total = getHydricToday();
+            const limit = parseInt(localStorage.getItem('cerraCare_hydricLimit') || '2000');
+            const pct = Math.min(100, (total / limit) * 100);
+            const totalEl = document.getElementById('hydric-total');
+            const barEl = document.getElementById('hydric-bar');
+            const limitEl = document.getElementById('hydric-limit');
+            const limitLabel = document.getElementById('hydric-limit-label');
+            if (totalEl) totalEl.textContent = total;
+            if (barEl) { barEl.style.width = pct + '%'; barEl.className = pct > 100 ? 'bg-red-500 h-full rounded-full transition-all' : 'bg-cyan-500 h-full rounded-full transition-all'; }
+            if (limitEl) limitEl.textContent = limit;
+            if (limitLabel) limitLabel.textContent = limit + 'ml';
+        }
+
+        // --- SPEECH-TO-TEXT ---
+        function startSpeech() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                showToast('Reconhecimento de voz nao suportado neste navegador.', 'error');
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.interimResults = false;
+            const btn = document.getElementById('mic-btn');
+            btn.innerHTML = '<i class="fa-solid fa-microphone text-red-500 fa-beat"></i>';
+            recognition.start();
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                const notes = document.getElementById('notes');
+                notes.value = notes.value ? notes.value + ' ' + text : text;
+            };
+            recognition.onerror = () => showToast('Erro ao capturar voz. Tente novamente.', 'error');
+            recognition.onend = () => { btn.innerHTML = '<i class="fa-solid fa-microphone"></i>'; };
+        }
+
+        // --- FOTOS (IndexedDB) ---
+        function openPhotoDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('CerraCareDB', 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('queue')) db.createObjectStore('queue', { keyPath: 'id' });
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function addPhoto(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                pendingPhotos.push({ data: reader.result, name: file.name, id: Date.now() });
+                renderPhotoPreviews();
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+
+        function renderPhotoPreviews() {
+            const container = document.getElementById('photo-preview');
+            if (!container) return;
+            container.innerHTML = pendingPhotos.map((p, i) => `
+                <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
+                    <img src="${p.data}" class="w-full h-full object-cover">
+                    <button onclick="pendingPhotos.splice(${i},1);renderPhotoPreviews();" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function savePhotosForRecord(recordId) {
+            if (pendingPhotos.length === 0) return;
+            openPhotoDB().then(db => {
+                const tx = db.transaction('photos', 'readwrite');
+                const store = tx.objectStore('photos');
+                pendingPhotos.forEach(p => {
+                    store.put({ id: p.id, recordId: recordId, data: p.data, name: p.name, timestamp: new Date().toISOString() });
+                });
+                tx.oncomplete = () => db.close();
+            });
+        }
+
+        // --- ASSINATURA DIGITAL ---
+        function initSignature() {
+            signatureCanvas = document.getElementById('signature-canvas');
+            if (!signatureCanvas) return;
+            sigCtx = signatureCanvas.getContext('2d');
+            const rect = signatureCanvas.parentElement.getBoundingClientRect();
+            if (rect.width) signatureCanvas.width = rect.width - 42;
+
+            const startDraw = (e) => { drawing = true; e.preventDefault(); };
+            const draw = (e) => {
+                if (!drawing) return;
+                e.preventDefault();
+                const rect = signatureCanvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                sigCtx.strokeStyle = '#1e293b';
+                sigCtx.lineWidth = 2;
+                sigCtx.lineCap = 'round';
+                sigCtx.lineTo(x, y);
+                sigCtx.stroke();
+                sigCtx.beginPath();
+                sigCtx.moveTo(x, y);
+            };
+            const endDraw = () => { drawing = false; sigCtx.beginPath(); };
+
+            signatureCanvas.addEventListener('mousedown', startDraw);
+            signatureCanvas.addEventListener('mousemove', draw);
+            signatureCanvas.addEventListener('mouseup', endDraw);
+            signatureCanvas.addEventListener('mouseleave', endDraw);
+            signatureCanvas.addEventListener('touchstart', startDraw);
+            signatureCanvas.addEventListener('touchmove', draw);
+            signatureCanvas.addEventListener('touchend', endDraw);
+        }
+
+        function clearSignature() {
+            if (!sigCtx || !signatureCanvas) return;
+            sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+            sigCtx.beginPath();
+        }
+
+        // --- FILA DE SINC OFFLINE ---
+        function addToSyncQueue(record) {
+            openPhotoDB().then(db => {
+                const tx = db.transaction('queue', 'readwrite');
+                tx.objectStore('queue').add({
+                    id: Date.now(),
+                    action: 'create',
+                    payload: record,
+                    timestamp: new Date().toISOString(),
+                    status: 'pending'
+                });
+                tx.oncomplete = () => db.close();
+            });
+        }
+
+        // --- WHATSAPP SHARE ---
+        function shareWhatsApp(recordId) {
+            const records = JSON.parse(localStorage.getItem('cerraCare_records')) || [];
+            const r = records.find(x => x.id === recordId);
+            if (!r) return;
+            const d = new Date(r.date);
+            let text = `*CerraCare - Passagem de Plantao*\n`;
+            text += `Cuidadora: ${r.caregiver}\n`;
+            text += `Data: ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR')}\n\n`;
+            if (r.vitals.pa) text += `P.A.: ${r.vitals.pa}\n`;
+            if (r.vitals.fc) text += `FC: ${r.vitals.fc} bpm\n`;
+            if (r.vitals.temp) text += `Temp: ${r.vitals.temp}C\n`;
+            if (r.vitals.sat) text += `SatO2: ${r.vitals.sat}%\n`;
+            text += `\nAlimentacao: ${r.routine.food ? 'Comeu bem' : 'Nao registrado'}\n`;
+            if (Array.isArray(r.routine.meds) && r.routine.meds.length) text += `Medicacoes: ${r.routine.meds.join(', ')}\n`;
+            text += `Diurese/Evac.: ${r.routine.wc ? 'Normal' : 'Nao registrado'}\n`;
+            if (r.routine.pain !== undefined) text += `Dor: ${r.routine.pain}/5 | Humor: ${r.routine.humor || 'N/I'}\n`;
+            if (r.notes) text += `\nNotas: ${r.notes}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const msgEl = document.getElementById('toast-msg');

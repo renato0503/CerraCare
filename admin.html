@@ -14,6 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -76,35 +77,58 @@
         <main class="flex-1 overflow-y-auto p-6 bg-slate-100">
             
             <!-- Dashboard Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-200 flex items-center gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-lg md:text-xl">
                         <i class="fa-solid fa-file-medical"></i>
                     </div>
                     <div>
-                        <p class="text-slate-500 text-sm font-medium">Total de Registros</p>
-                        <h3 class="text-2xl font-bold text-slate-800" id="stat-total">0</h3>
+                        <p class="text-slate-500 text-xs md:text-sm font-medium">Total de Registros</p>
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800" id="stat-total">0</h3>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-xl">
+                <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-200 flex items-center gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-lg md:text-xl">
                         <i class="fa-solid fa-users"></i>
                     </div>
                     <div>
-                        <p class="text-slate-500 text-sm font-medium">Cuidadoras Ativas</p>
-                        <h3 class="text-2xl font-bold text-slate-800" id="stat-caregivers">0</h3>
+                        <p class="text-slate-500 text-xs md:text-sm font-medium">Cuidadoras Ativas</p>
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800" id="stat-caregivers">0</h3>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl">
+                <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-200 flex items-center gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-lg md:text-xl">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                     <div>
-                        <p class="text-slate-500 text-sm font-medium">Alertas (P.A / Febre)</p>
-                        <h3 class="text-2xl font-bold text-slate-800" id="stat-alerts">0</h3>
+                        <p class="text-slate-500 text-xs md:text-sm font-medium">Alertas (PA/Febre/Estoque)</p>
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800" id="stat-alerts">0</h3>
                     </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-200 flex items-center gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-lg md:text-xl">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-xs md:text-sm font-medium">Pendentes de Sync</p>
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800" id="stat-sync">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo Dor/Humor -->
+            <div id="pain-summary" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8 hidden">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-face-smile text-amber-500"></i> Escala de Dor e Humor (últimos 10 registros)
+                </h3>
+                <div id="pain-chart" class="flex items-end gap-2 h-24">
+                </div>
+                <div class="flex justify-between text-xs text-slate-400 mt-2">
+                    <span>Mais antigo</span>
+                    <span>Mais recente</span>
                 </div>
             </div>
 
@@ -119,6 +143,24 @@
                 </div>
                 <div id="meds-list" class="flex flex-wrap gap-2">
                     <!-- Remédios renderizados aqui -->
+                </div>
+            </div>
+
+            <!-- Gerenciador de Horários de Remédios -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-orange-500"></i> Horários de Medicação
+                </h3>
+                <p class="text-xs text-slate-500 mb-4">Defina os horários para cada remédio. A cuidadora verá alertas no app quando estiver atrasado.</p>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <input type="text" id="sched-med-name" placeholder="Nome do remédio" class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none flex-1 min-w-[160px]">
+                    <input type="text" id="sched-med-times" placeholder="Horários (ex: 08:00, 20:00)" class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none flex-1 min-w-[160px]">
+                    <button onclick="addMedSchedule()" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-orange-600 transition">Adicionar</button>
+                </div>
+                <div id="schedule-list" class="space-y-2">
+                </div>
+                <div id="schedule-empty" class="text-center py-6 text-slate-400 text-sm">
+                    Nenhum horário de medicação cadastrado.
                 </div>
             </div>
 
@@ -147,6 +189,9 @@
                     <h3 class="text-lg font-bold text-slate-800">Banco de Dados - Prontuários</h3>
                     <button onclick="openModal('add')" class="bg-secondary text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-600 transition flex gap-2 items-center">
                         <i class="fa-solid fa-plus"></i> Novo Registro
+                    </button>
+                    <button onclick="exportPDF()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition flex gap-2 items-center">
+                        <i class="fa-solid fa-file-pdf"></i> Exportar PDF
                     </button>
                 </div>
                 
@@ -303,6 +348,8 @@
                 renderAdmin();
                 renderMeds();
                 renderInventory();
+                renderSchedule();
+                renderSchedule();
                 renderInventory();
             }
         });
@@ -457,7 +504,180 @@
             }
         }
 
-        // --- RENDERIZAÇÃO ---
+        // --- HORÁRIOS DE MEDICAÇÃO ---
+        function getMedSchedule() {
+            return JSON.parse(localStorage.getItem('cerraCare_medSchedule')) || [];
+        }
+
+        function saveMedSchedule(schedule) {
+            localStorage.setItem('cerraCare_medSchedule', JSON.stringify(schedule));
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const sched = getMedSchedule();
+            const container = document.getElementById('schedule-list');
+            const empty = document.getElementById('schedule-empty');
+            if (!container) return;
+            container.innerHTML = '';
+            if (sched.length === 0) { empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+            sched.forEach(item => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-700">${item.name}</span>
+                            <span class="text-xs text-slate-500 ml-2">${item.times.join(' | ')}</span>
+                        </div>
+                        <button onclick="removeSchedule(${item.id})" class="text-slate-400 hover:text-red-500 p-1.5"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function addMedSchedule() {
+            const name = document.getElementById('sched-med-name').value.trim();
+            const timesStr = document.getElementById('sched-med-times').value.trim();
+            if (!name || !timesStr) { showToast('Preencha nome e horários.', 'error'); return; }
+            const times = timesStr.split(',').map(t => t.trim()).filter(t => /^\d{2}:\d{2}$/.test(t));
+            if (times.length === 0) { showToast('Formato de horário inválido. Use HH:MM separados por vírgula.', 'error'); return; }
+            const sched = getMedSchedule();
+            sched.push({ id: Date.now(), name, times, createdAt: new Date().toISOString() });
+            saveMedSchedule(sched);
+            document.getElementById('sched-med-name').value = '';
+            document.getElementById('sched-med-times').value = '';
+            showToast('Horário de medicação cadastrado!');
+        }
+
+        function removeSchedule(id) {
+            if (!confirm('Remover este horário?')) return;
+            const sched = getMedSchedule();
+            saveMedSchedule(sched.filter(s => s.id !== id));
+            showToast('Horário removido.');
+        }
+
+        // --- EXPORTAÇÃO PDF ---
+        function exportPDF() {
+            const records = getRecords();
+            if (records.length === 0) { showToast('Nenhum registro para exportar.', 'error'); return; }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            doc.setFont('helvetica', 'normal');
+
+            doc.setFontSize(18);
+            doc.setTextColor(14, 165, 233);
+            doc.text('CerraCare - Relatorio de Prontuarios', 14, 20);
+
+            const now = new Date();
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Gerado em: ${now.toLocaleDateString('pt-BR')} as ${now.toLocaleTimeString('pt-BR')}`, 14, 28);
+
+            let y = 38;
+            const pageHeight = doc.internal.pageSize.height;
+
+            records.forEach((r, i) => {
+                if (y > pageHeight - 30) { doc.addPage(); y = 20; }
+
+                const d = new Date(r.date);
+                doc.setFontSize(11);
+                doc.setTextColor(30);
+                doc.text(`${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR')} - ${r.caregiver || 'N/I'}`, 14, y);
+                y += 6;
+
+                doc.setFontSize(9);
+                const vitals = [];
+                if (r.vitals.pa) vitals.push(`PA: ${r.vitals.pa}`);
+                if (r.vitals.fc) vitals.push(`FC: ${r.vitals.fc}`);
+                if (r.vitals.temp) vitals.push(`Temp: ${r.vitals.temp}C`);
+                if (r.vitals.sat) vitals.push(`SatO2: ${r.vitals.sat}%`);
+                if (vitals.length) { doc.text(`Sinais Vitais: ${vitals.join(' | ')}`, 14, y); y += 5; }
+
+                const rotina = [];
+                if (r.routine.food) rotina.push('Comeu');
+                if (r.routine.meds && Array.isArray(r.routine.meds) && r.routine.meds.length) rotina.push(`Medicacoes: ${r.routine.meds.join(', ')}`);
+                else if (r.routine.meds) rotina.push('Medicacao: OK');
+                if (r.routine.wc) rotina.push('Diurese/Evac.: OK');
+                if (r.routine.pain !== undefined) rotina.push(`Dor: ${r.routine.pain}/5 Humor: ${r.routine.humor || 'N/I'}`);
+                if (rotina.length) { doc.text(`Rotina: ${rotina.join(' | ')}`, 14, y); y += 5; }
+
+                if (r.notes) {
+                    const lines = doc.splitTextToSize(`Notas: ${r.notes}`, 180);
+                    doc.text(lines, 14, y);
+                    y += lines.length * 5;
+                }
+
+                y += 4;
+                doc.setDrawColor(220);
+                doc.line(14, y, 196, y);
+                y += 5;
+            });
+
+            doc.save(`Cerracare_Relatorio_${now.toISOString().slice(0, 10)}.pdf`);
+            showToast('PDF exportado com sucesso!');
+        }
+
+        // --- FILA DE SINCRONIZAÇÃO OFFLINE (IndexedDB) ---
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('CerraCareDB', 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('queue')) db.createObjectStore('queue', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', { keyPath: 'id' });
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function sync_getQueue() {
+            return openDB().then(db => {
+                return new Promise((resolve) => {
+                    const tx = db.transaction('queue', 'readonly');
+                    const store = tx.objectStore('queue');
+                    const req = store.getAll();
+                    req.onsuccess = () => { resolve(req.result); db.close(); };
+                });
+            });
+        }
+
+        function sync_clearQueue() {
+            return openDB().then(db => {
+                return new Promise((resolve) => {
+                    const tx = db.transaction('queue', 'readwrite');
+                    tx.objectStore('queue').clear();
+                    tx.oncomplete = () => { resolve(); db.close(); };
+                });
+            });
+        }
+
+        async function doSync() {
+            const queue = await sync_getQueue();
+            if (queue.length === 0) { showToast('Nenhum item pendente de sincronizacao.', 'error'); return; }
+            let success = 0;
+            for (const item of queue) {
+                try {
+                    const url = localStorage.getItem('cerraCare_syncURL');
+                    if (url) {
+                        await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item.payload) });
+                    }
+                    success++;
+                } catch (e) { console.error('Sync falhou:', e); }
+            }
+            await sync_clearQueue();
+            updateSyncStat();
+            showToast(`${success}/${queue.length} itens sincronizados.`);
+        }
+
+        async function updateSyncStat() {
+            const queue = await sync_getQueue();
+            const el = document.getElementById('stat-sync');
+            if (el) el.textContent = queue.length;
+        }
+
+        // --- RENDERIZAÇÃO (atualizado) ---
         function renderAdmin() {
             const records = getRecords();
             const tbody = document.getElementById('table-body');
@@ -465,12 +685,12 @@
             
             tbody.innerHTML = '';
             
-            // Dashboard Stats
             document.getElementById('stat-total').textContent = records.length;
             const caregivers = new Set(records.map(r => r.caregiver)).size;
             document.getElementById('stat-caregivers').textContent = caregivers;
             
-            let alertCount = 0;
+            let alertCount = getLowStockCount();
+            updateSyncStat();
 
             if (records.length === 0) {
                 emptyState.classList.remove('hidden');
@@ -529,6 +749,29 @@
             }
             
             document.getElementById('stat-alerts').textContent = alertCount + getLowStockCount();
+            updateSyncStat();
+            renderPainChart(records);
+        }
+
+        function renderPainChart(records) {
+            const section = document.getElementById('pain-summary');
+            const chart = document.getElementById('pain-chart');
+            if (!section || !chart) return;
+
+            const withPain = records.filter(r => r.routine && r.routine.pain !== undefined).slice(0, 10).reverse();
+            if (withPain.length === 0) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+
+            const sentiments = { 'muito_triste': 0, 'triste': 1, 'neutro': 2, 'feliz': 3, 'muito_feliz': 4 };
+            const emojis = ['😫', '😢', '😐', '🙂', '😄'];
+            chart.innerHTML = withPain.map(r => {
+                const painPct = Math.min(100, (r.routine.pain || 0) * 20);
+                return `<div class="flex-1 flex flex-col items-center gap-1" title="Dor: ${r.routine.pain || 0}/5 | ${r.routine.humor || 'N/I'}">
+                    <span class="text-xs">${r.routine.humor ? emojis[sentiments[r.routine.humor]] || '😐' : '😐'}</span>
+                    <div class="w-full bg-red-200 rounded-t" style="height:${painPct}px;max-height:72px;background:${painPct > 60 ? '#ef4444' : painPct > 30 ? '#f59e0b' : '#10b981'}"></div>
+                    <span class="text-[10px] text-slate-500">${new Date(r.date).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'})}</span>
+                </div>`;
+            }).join('');
         }
 
         // --- CRUD AÇÕES ---
