@@ -61,6 +61,9 @@
                 </div>
             </div>
             <div class="flex gap-4">
+                <button onclick="openPasswordModal()" class="text-slate-500 hover:text-primary transition text-sm font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-key"></i> Senha
+                </button>
                 <a href="index.html" class="text-slate-500 hover:text-primary transition flex items-center gap-2 text-sm font-semibold">
                     <i class="fa-solid fa-arrow-left"></i> Voltar ao App
                 </a>
@@ -116,6 +119,25 @@
                 </div>
                 <div id="meds-list" class="flex flex-wrap gap-2">
                     <!-- Remédios renderizados aqui -->
+                </div>
+            </div>
+
+            <!-- Gerenciador de Estoque -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-amber-500"></i> Controle de Estoque
+                </h3>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <input type="text" id="new-item-name" placeholder="Nome do item" class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none flex-1 min-w-[140px]">
+                    <input type="number" id="new-item-qty" placeholder="Qtd inicial" min="0" class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none w-28">
+                    <input type="text" id="new-item-unit" placeholder="Unidade (ex: un)" class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none w-32">
+                    <input type="number" id="new-item-alert" placeholder="Alerta <" min="0" value="10" class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none w-24">
+                    <button onclick="addInventoryItem()" class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-600 transition">Adicionar</button>
+                </div>
+                <div id="inventory-list" class="space-y-2">
+                </div>
+                <div id="inventory-empty" class="text-center py-6 text-slate-400 text-sm">
+                    Nenhum item cadastrado no estoque.
                 </div>
             </div>
 
@@ -225,6 +247,28 @@
         </div>
     </div>
 
+    <!-- MODAL TROCAR SENHA -->
+    <div id="password-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="absolute w-full h-full bg-slate-900 opacity-50" onclick="closePasswordModal()"></div>
+        <div class="bg-white w-11/12 max-w-sm mx-auto rounded-2xl shadow-2xl z-50 p-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Alterar Senha do Admin</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Senha Atual</label>
+                    <input type="password" id="current-pass" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Nova Senha</label>
+                    <input type="password" id="new-pass" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:border-primary outline-none">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button onclick="closePasswordModal()" class="px-4 py-2 text-slate-500 font-medium hover:text-slate-700 transition">Cancelar</button>
+                    <button onclick="changePassword()" class="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-blue-600 transition">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-xl transition-all duration-300 transform -translate-y-24 opacity-0 z-50 flex items-center gap-3 text-sm font-medium">
         <span id="toast-msg">Mensagem</span>
@@ -234,7 +278,8 @@
         // --- AUTENTICAÇÃO SIMULADA ---
         function loginAdmin() {
             const pass = document.getElementById('admin-pass').value;
-            if (pass === 'admin123') { // Senha hardcoded para MVP
+            const storedPass = localStorage.getItem('cerraCare_admin_pass') || 'admin123';
+            if (pass === storedPass) {
                 sessionStorage.setItem('cerraCare_admin_logged', 'true');
                 document.getElementById('login-admin').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
@@ -257,6 +302,8 @@
                 document.getElementById('admin-panel').classList.remove('hidden');
                 renderAdmin();
                 renderMeds();
+                renderInventory();
+                renderInventory();
             }
         });
 
@@ -311,6 +358,103 @@
         function saveToStorage(records) {
             localStorage.setItem('cerraCare_records', JSON.stringify(records));
             renderAdmin(); // Atualiza a view
+        }
+
+        // --- INVENTÁRIO / ESTOQUE ---
+        function getInventory() {
+            const data = JSON.parse(localStorage.getItem('cerraCare_inventory')) || { items: [], usageLog: [] };
+            if (!data.usageLog) data.usageLog = [];
+            return data;
+        }
+
+        function saveInventory(data) {
+            localStorage.setItem('cerraCare_inventory', JSON.stringify(data));
+            renderInventory();
+        }
+
+        function getLowStockCount() {
+            const inv = getInventory();
+            return inv.items.filter(i => i.quantity <= i.alertThreshold).length;
+        }
+
+        function renderInventory() {
+            const inv = getInventory();
+            const container = document.getElementById('inventory-list');
+            const empty = document.getElementById('inventory-empty');
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (inv.items.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            inv.items.forEach(item => {
+                const isLow = item.quantity <= item.alertThreshold;
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-slate-50 border rounded-xl ${isLow ? 'border-red-300 bg-red-50/60' : 'border-slate-200'}">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-slate-700 truncate">${item.name}</span>
+                                ${isLow ? '<span class="px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-bold">BAIXO</span>' : ''}
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">
+                                Estoque: <span class="font-mono font-bold ${isLow ? 'text-red-600' : 'text-slate-700'}">${item.quantity}</span> ${item.unit}
+                                <span class="text-slate-400">| Alerta: < ${item.alertThreshold}</span>
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1 ml-2">
+                            <input type="number" value="${item.quantity}" min="0" 
+                                onchange="updateInventoryQty(${item.id}, this.value)" 
+                                class="w-16 bg-white border border-slate-300 rounded px-1.5 py-1 text-xs text-center focus:border-primary outline-none">
+                            <button onclick="removeInventoryItem(${item.id})" class="text-slate-400 hover:text-red-500 p-1.5 transition"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addInventoryItem() {
+            const name = document.getElementById('new-item-name').value.trim();
+            const qty = parseInt(document.getElementById('new-item-qty').value) || 0;
+            const unit = document.getElementById('new-item-unit').value.trim() || 'un';
+            const alert = parseInt(document.getElementById('new-item-alert').value) || 5;
+
+            if (!name) { showToast('Informe o nome do item.', 'error'); return; }
+
+            const inv = getInventory();
+            inv.items.push({
+                id: Date.now(),
+                name, quantity: qty, unit,
+                alertThreshold: alert,
+                createdAt: new Date().toISOString()
+            });
+            saveInventory(inv);
+            document.getElementById('new-item-name').value = '';
+            document.getElementById('new-item-qty').value = '';
+            document.getElementById('new-item-unit').value = '';
+            renderAdmin();
+            showToast('Item adicionado ao estoque!');
+        }
+
+        function removeInventoryItem(id) {
+            if (!confirm('Remover este item do estoque?')) return;
+            const inv = getInventory();
+            inv.items = inv.items.filter(i => i.id !== id);
+            inv.usageLog = inv.usageLog.filter(l => l.itemId !== id);
+            saveInventory(inv);
+            renderAdmin();
+            showToast('Item removido.');
+        }
+
+        function updateInventoryQty(id, newQty) {
+            const inv = getInventory();
+            const item = inv.items.find(i => i.id === id);
+            if (item) {
+                item.quantity = Math.max(0, parseInt(newQty) || 0);
+                saveInventory(inv);
+            }
         }
 
         // --- RENDERIZAÇÃO ---
@@ -384,7 +528,7 @@
                 });
             }
             
-            document.getElementById('stat-alerts').textContent = alertCount;
+            document.getElementById('stat-alerts').textContent = alertCount + getLowStockCount();
         }
 
         // --- CRUD AÇÕES ---
@@ -518,6 +662,36 @@
                     console.error('Falha ao registrar Service Worker', err);
                 });
             });
+        }
+
+        function openPasswordModal() {
+            document.getElementById('password-modal').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('current-pass').value = '';
+            document.getElementById('new-pass').value = '';
+            document.body.classList.add('modal-active');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.add('opacity-0', 'pointer-events-none');
+            document.body.classList.remove('modal-active');
+        }
+
+        function changePassword() {
+            const current = document.getElementById('current-pass').value;
+            const newPass = document.getElementById('new-pass').value.trim();
+            const storedPass = localStorage.getItem('cerraCare_admin_pass') || 'admin123';
+
+            if (current !== storedPass) {
+                showToast('Senha atual incorreta!', 'error');
+                return;
+            }
+            if (!newPass) {
+                showToast('A nova senha não pode estar vazia.', 'error');
+                return;
+            }
+            localStorage.setItem('cerraCare_admin_pass', newPass);
+            closePasswordModal();
+            showToast('Senha alterada com sucesso!');
         }
 
         function showToast(message, type = 'success') {

@@ -218,13 +218,32 @@
                             <i class="fa-solid fa-location-crosshairs text-slate-400"></i>
                             <span id="loc-coords" class="font-mono text-xs"></span>
                         </div>
-                        <!-- Mini mapa estático simulado -->
-                        <div class="w-full h-32 bg-slate-200 rounded-lg mt-3 overflow-hidden relative">
-                            <img id="static-map" src="" alt="Mapa" class="w-full h-full object-cover opacity-80" onerror="this.style.display='none'">
-                            <div class="absolute inset-0 flex justify-center items-center text-slate-500 text-xs text-center p-2">
-                                Mapa Estático (Requer API Key)
-                            </div>
-                        </div>
+                        <a id="gmaps-link" href="#" target="_blank" class="block w-full bg-white border border-slate-200 rounded-lg mt-3 p-3 text-center text-primary text-sm font-medium hover:bg-blue-50 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-map-location-dot"></i> Ver localização no Google Maps
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MÓDULO 4: CONTROLE DE ESTOQUE -->
+            <section id="tab-estoque" class="tab-content p-4 space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800">Controle de Estoque</h2>
+                    <button onclick="renderInventory()" class="text-primary p-2 bg-blue-50 rounded-lg"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+                <div id="inventory-cards" class="space-y-3">
+                </div>
+                <div id="inventory-empty-state" class="hidden text-center py-10 text-slate-400">
+                    <i class="fa-solid fa-box-open text-4xl mb-3 block"></i>
+                    <p>Nenhum item cadastrado no estoque.</p>
+                    <p class="text-xs mt-1">Solicite ao administrador.</p>
+                </div>
+
+                <div id="inventory-log-section" class="mt-8">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Últimas Retiradas
+                    </h3>
+                    <div id="inventory-log" class="space-y-2">
                     </div>
                 </div>
             </section>
@@ -246,6 +265,11 @@
             <button onclick="switchTab('checkin')" id="nav-checkin" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition">
                 <i class="fa-solid fa-map-location-dot text-xl"></i>
                 <span class="text-[10px] font-medium">Check-in</span>
+            </button>
+
+            <button onclick="switchTab('estoque')" id="nav-estoque" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition">
+                <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                <span class="text-[10px] font-medium">Estoque</span>
             </button>
         </nav>
     </div>
@@ -353,6 +377,7 @@
 
             // Ações específicas por aba
             if(tabId === 'historico') loadTimeline();
+            if(tabId === 'estoque') renderInventory();
         }
 
         // --- MÓDULO: PRONTUÁRIO (CRUD LOCALSTORAGE) ---
@@ -504,13 +529,16 @@
 
                     document.getElementById('loc-time').textContent = timestamp;
                     document.getElementById('loc-coords').textContent = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+                    document.getElementById('gmaps-link').href = `https://www.google.com/maps?q=${lat},${lon}`;
                     
                     // Em um cenário real, aqui seria feita uma chamada de API para salvar no backend.
                     
-                    resultDiv.classList.remove('hidden');
-                    resetCheckinBtn('Check-in Realizado!');
-                    btn.classList.replace('bg-secondary', 'bg-slate-300');
-                    btn.classList.replace('hover:bg-emerald-600', 'text-slate-500');
+                     resultDiv.classList.remove('hidden');
+                    btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Check-in Realizado!';
+                    btn.classList.remove('bg-secondary', 'hover:bg-emerald-600', 'shadow-secondary/30');
+                    btn.classList.add('bg-slate-400', 'shadow-slate-400/30', 'cursor-default');
+                    btn.disabled = true;
+                    setTimeout(() => { resetCheckinBtn(); }, 5000);
                     showToast('Check-in registrado com sucesso!');
                 },
                 // Erro
@@ -531,6 +559,135 @@
             const btn = document.getElementById('btn-checkin');
             btn.innerHTML = text;
             btn.disabled = false;
+            btn.className = 'w-full bg-secondary text-white font-bold py-4 rounded-xl shadow-lg shadow-secondary/30 hover:bg-emerald-600 active:scale-95 transition flex justify-center items-center gap-2';
+        }
+
+        // --- MÓDULO: CONTROLE DE ESTOQUE ---
+        function getInventoryData() {
+            return JSON.parse(localStorage.getItem('cerraCare_inventory')) || { items: [], usageLog: [] };
+        }
+
+        function saveInventoryData(data) {
+            localStorage.setItem('cerraCare_inventory', JSON.stringify(data));
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const inv = getInventoryData();
+            const container = document.getElementById('inventory-cards');
+            const empty = document.getElementById('inventory-empty-state');
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (inv.items.length === 0) {
+                empty.classList.remove('hidden');
+                document.getElementById('inventory-log-section').classList.add('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+            document.getElementById('inventory-log-section').classList.remove('hidden');
+
+            inv.items.forEach(item => {
+                const isLow = item.quantity <= item.alertThreshold;
+                const isCritical = item.quantity === 0;
+                const statusColor = isCritical ? 'border-red-400 bg-red-50' : isLow ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white';
+                const qtyColor = isCritical ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-emerald-600';
+
+                container.innerHTML += `
+                    <div class="rounded-2xl p-4 shadow-sm border ${statusColor} transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">${item.name}</h4>
+                                <p class="text-xs text-slate-500 mt-0.5">Alerta abaixo de ${item.alertThreshold} ${item.unit}</p>
+                            </div>
+                            <span class="text-lg font-bold ${qtyColor}">${item.quantity}<span class="text-xs font-normal text-slate-400"> ${item.unit}</span></span>
+                        </div>
+                        ${isLow ? `<p class="text-xs text-red-500 font-medium mb-3 flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> Estoque baixo! Avise a família.</p>` : ''}
+                        <div class="flex gap-2">
+                            ${[1, 2, 5].map(n => `
+                                <button onclick="useInventoryItem(${item.id}, ${n})" 
+                                    class="flex-1 py-2 rounded-lg text-xs font-bold border border-slate-200 text-slate-600 hover:bg-slate-100 active:scale-95 transition"
+                                    ${item.quantity < n ? 'disabled' : ''}>
+                                    -${n}
+                                </button>
+                            `).join('')}
+                            <button onclick="useInventoryItem(${item.id}, 0)" 
+                                class="flex-1 py-2 rounded-lg text-xs font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 active:scale-95 transition">
+                                + Repor
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            renderInventoryLog();
+        }
+
+        function useInventoryItem(id, qty) {
+            const inv = getInventoryData();
+            const item = inv.items.find(i => i.id === id);
+            if (!item) return;
+
+            if (qty > 0) {
+                if (item.quantity < qty) { showToast('Quantidade insuficiente no estoque.', 'error'); return; }
+                item.quantity -= qty;
+                inv.usageLog.unshift({
+                    id: Date.now(),
+                    itemId: id,
+                    itemName: item.name,
+                    quantity: -qty,
+                    date: new Date().toISOString(),
+                    caregiver: currentUser
+                });
+                showToast(`${qty} ${item.unit} de ${item.name} retirado(s).`);
+            } else {
+                const restockQty = parseInt(prompt(`Quantas ${item.unit} de ${item.name} deseja repor?`, '10')) || 0;
+                if (restockQty <= 0) return;
+                item.quantity += restockQty;
+                inv.usageLog.unshift({
+                    id: Date.now(),
+                    itemId: id,
+                    itemName: item.name,
+                    quantity: restockQty,
+                    date: new Date().toISOString(),
+                    caregiver: currentUser
+                });
+                showToast(`${restockQty} ${item.unit} de ${item.name} reposto(s).`);
+            }
+
+            inv.usageLog = inv.usageLog.slice(0, 50);
+            saveInventoryData(inv);
+        }
+
+        function renderInventoryLog() {
+            const inv = getInventoryData();
+            const logContainer = document.getElementById('inventory-log');
+            if (!logContainer) return;
+
+            const recent = inv.usageLog.slice(0, 10);
+            logContainer.innerHTML = '';
+            if (recent.length === 0) {
+                logContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Nenhuma movimentação registrada.</p>';
+                return;
+            }
+            recent.forEach(entry => {
+                const d = new Date(entry.date);
+                const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                const isAddition = entry.quantity > 0;
+                logContainer.innerHTML += `
+                    <div class="flex items-center justify-between py-2 px-3 bg-white rounded-lg border border-slate-100 text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full ${isAddition ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                            <span class="font-medium text-slate-700">${entry.itemName}</span>
+                            <span class="${isAddition ? 'text-emerald-600' : 'text-amber-600'} font-bold">
+                                ${isAddition ? '+' : ''}${entry.quantity}
+                            </span>
+                        </div>
+                        <span class="text-slate-400">${dateStr} ${timeStr} - ${entry.caregiver}</span>
+                    </div>
+                `;
+            });
         }
 
         // --- UTILITÁRIOS ---
